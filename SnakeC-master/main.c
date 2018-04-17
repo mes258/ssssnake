@@ -261,12 +261,10 @@ void tick_world(World *world, uint64_t delta) {
       Apple *apple = apple_new();
       int rand_y = (rand() % (LINES - 2)) + 1;
       int rand_x = (rand() % (COLS - 4)) + 2;
-      apple->x = rand_x;
-      apple->y = rand_y;
+      
       mvaddch(rand_y, rand_x, apple->chartype);
       linked_list_add_front(world->apples_list, apple);
       ate = false;
-      mainApple = apple;
     }
     tick_steps = 0; // Reset when used
   }
@@ -281,11 +279,8 @@ World *world_new() {
   Apple *apple = apple_new();
   int rand_y = (rand() % (LINES - 1)) + 1;
   int rand_x = (rand() % (COLS - 2)) + 2;
-  apple->x = rand_x;
-  apple->y = rand_y;
   mvaddch(rand_y, rand_x, apple->chartype);
   linked_list_add_front(world->apples_list, apple);
-  mainApple = apple;
 
   return world;
 }
