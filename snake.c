@@ -198,7 +198,7 @@ void AISnake() {
 				//tick_snake will take care of this
 			}
 		}
-		mvprintw(3, COLS / 16, "Score: %i", snake1->points);
+		//mvprintw(3, COLS / 16, "Score: %i", snake1->points);
 	}
 }
 
@@ -295,6 +295,32 @@ Snake *snake_new() {
 void snake_reset(Snake *snake) {
   snake->posX = COLS / 2;
   snake->posY = LINES / 2;
+  snake->points = 0;
+  snake->facing_direction = rand() % 4;
+  if (snake->body_list != NULL) {
+    // Remove all the snakes body parts from the screen if there are any
+    if (snake->body_list->length > 0) {
+      uint32_t body_length = snake->body_list->length;
+      for (size_t i = 0; i < body_length; i++) {
+        SnakeBodyPart *body_part = linked_list_pop_last(snake->body_list);
+        mvaddch(body_part->posY, body_part->posX, ' ');
+      }
+    }
+    linked_list_dealloc(snake->body_list);
+  }
+  snake->body_list = linked_list_new();
+  snake_append_body_part(snake);
+}
+
+Snake *new_SnakeAI(){
+  Snake *snake = calloc(1, sizeof(Snake));
+  snake_reset(snake);
+  return snake;
+}
+
+void snake_AIreset(Snake *snake){
+  snake->posX = (rand() % (COLS - 2)) + 2;
+  snake->posY = (rand() % (LINES - 1)) + 1;
   snake->points = 0;
   snake->facing_direction = rand() % 4;
   if (snake->body_list != NULL) {
