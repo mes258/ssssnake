@@ -80,15 +80,15 @@ In the game below, the user snake (the one with the 's' body) has eaten two appl
 
      Score: 20							Highscore: 50
 
-                          @
+                       	@
 
 								<z
 
-					^
-					z
-                                        z                              
- 					z
-             <sss			z
+			^		
+			z		
+                        z                                              
+ 			z		
+             <sss	z		
 
 
 				<zzzzzzzz
