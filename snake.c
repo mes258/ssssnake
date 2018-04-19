@@ -6,7 +6,7 @@
 
 #include "linkedlist.h"
 //THREADs for snakes
-void *AISnake(void* arg);
+void *AISnake();
 void *HumanSnake();
 
 //Set up structs 
@@ -15,8 +15,6 @@ typedef enum { UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3 } direction;
 typedef struct {
   LinkedList *apples_list;
   uint8_t max_apples;
-  LinkedList *obstacles_list;
-  uint8_t max_obstacles;
 } World;
 
 typedef struct {
@@ -93,7 +91,6 @@ int main() {
   // Window border
   WINDOW *border = create_win(LINES, COLS, 0, 0);
 
-  // TODO: Add walls/obstacles to the World.
 
 
   
@@ -259,8 +256,6 @@ void tick_snake(Snake *snake) {
   }
   // TODO: Check collision with the tail
 
-  // TODO: Check collision with all the obstacles
-
   // Check collsion with apples
   if (mvinch(snake->posY, snake->posX) == '@') {
     ate = true;
@@ -324,11 +319,11 @@ void snake_reset(Snake *snake) {
 }
 
 /** World management **/
+//CAN WE REMOVE THIS? JUST TICK SNAKES AND KEEP APPLES GLOBAL?
 void tick_world(World *world, uint64_t delta) {
   static uint64_t tick_steps = 0;
   tick_steps += delta;
 
-  // FIXME: Better approach might be a switch and fallthorugh it ...
   if (tick_steps >= 3000) {
     // Spawn Apple at random location every 3rd
     // untill there are world->max_apples apple on screen.
@@ -352,8 +347,6 @@ World *world_new() {
   World *world = calloc(1, sizeof(World));
   world->apples_list = linked_list_new();
   world->max_apples = 255;
-  world->obstacles_list = linked_list_new();
-  world->max_obstacles = 3;
   Apple *apple = apple_new();
   int rand_y = (rand() % (LINES - 1)) + 1;
   int rand_x = (rand() % (COLS - 2)) + 2;
@@ -366,6 +359,7 @@ World *world_new() {
 }
 
 /** Apple handling **/
+//DIFFERENT VALUES FOR APPLES? 
 Apple *apple_new() {
   Apple *apple = calloc(1, sizeof(Apple));
   apple->chartype = '@';

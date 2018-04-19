@@ -1,5 +1,0 @@
-//A typed design document that provides a description of all files, major data structures, and sample output (console or data file). Grade will be based on clarity and completeness.
-
-Files: 
-snake.c
-This is the main file. It creates the board, the user snake and all the AI snakes. 
