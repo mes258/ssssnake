@@ -1,7 +1,6 @@
-//A typed design document that provides a description of all files, major data structures, and sample output (console or data file). Grade will be based on clarity and completeness.
 # SSSSnake
-Vincent Portelli, Michael Smith
-Beta V1
+By Vincent Portelli and Michael Smith; For Beta V0
+
 
 ## Files: 
 * `snake.c`
