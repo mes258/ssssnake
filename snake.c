@@ -15,6 +15,8 @@ typedef enum { UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3 } direction;
 typedef struct {
   LinkedList *apples_list;
   uint8_t max_apples;
+  Snake snakes[4];
+  char *winner;
 } World;
 
 typedef struct {
@@ -23,7 +25,6 @@ typedef struct {
   int posX, posY;
   direction facing_direction;
   uint16_t points;
-  uint16_t highscore;
   LinkedList *body_list;
   World *world;
 } Snake;
@@ -70,12 +71,12 @@ Apple *mainApple;
 
 //MAIN FUNCTION
 int main() {
-	//SET UP BOARD AND TIME AND GAME
-	srand(time(NULL));
+  //set up world
+  srand(time(NULL));
   WINDOW *root = initscr(); /* initialize the curses library */
 
   cbreak();             /* Line buffering disabled pass on everything to me*/
-  keypad(stdscr, true); /* For keyboard arrows 	*/
+  keypad(stdscr, true); /* For keyboard arrows  */
   noecho();             /* Do not echo out input */
   nodelay(root, true);  /* Make getch non-blocking */
 
@@ -86,25 +87,45 @@ int main() {
   }
   start_color(); /* Start color */
 
-  
+  World *world = world_new();
 
   // Window border
   WINDOW *border = create_win(LINES, COLS, 0, 0);
 
+  //make threads
+  //Create and call threads for snakes
+  //array of tids
+  pthread_t *tids;
+  tids = malloc(sizeof(pthread_t)*4);
+  int i = 0;
+  //create threads, one per snake; the snakes are made in the threads
+  for(i = 0; i < 1; i++){
+    if(i == 0){//create one human snake
+      pthread_create(&tids[i], NULL, HumanSnake, NULL);
+    }else{//the rest are AISnakes
+      pthread_create(&tids[i], NULL, AISnake, NULL);
+    }
+  } 
 
-	//Create and call threads for snakes
-	//array of tids
-	pthread_t *tids;
-	tids = malloc(sizeof(pthread_t)*4);
-	int i = 0;
-	//create threads, one per snake; the snakes are made in the threads
-	for(i = 0; i < 1; i++){
-		if(i == 0){//create one human snake
-			pthread_create(&tids[i], NULL, HumanSnake, NULL);
-		}else{//the rest are AISnakes
-			pthread_create(&tids[i], NULL, AISnake, NULL);
-		}
-	} 
+  //run it
+  bool QUIT = false;
+
+  struct timeval start;
+  struct timeval now;
+  gettimeofday(&start, NULL);
+  uint64_t delta;
+  uint64_t const DELTA_INTERVAL = 30; // Tick rate in microseconds.
+
+  while (!QUIT) {
+    // Tick the world
+    gettimeofday(&now, NULL);
+    delta = ((now.tv_sec * 5000) + (now.tv_usec / 5000)) -
+            ((start.tv_sec * 5000) + (start.tv_usec / 5000));
+    if (delta >= DELTA_INTERVAL) {
+      tick_world(world, delta);
+      start = now;
+    }
+  }
 
 	//join threads
 	for(i = 0; i < 2; i++){
@@ -113,35 +134,15 @@ int main() {
 	
 	//close window/game
 	delwin(root);
-  	delwin(border);
-  	endwin();
+  delwin(border);
+  endwin();
 	
 }
 
 void *HumanSnake(){
+  Snake *snake = snake_new();
 
-	World *world = world_new();
-
-
-	struct timeval start;
-  	struct timeval now;
-  	gettimeofday(&start, NULL);
-  	uint64_t delta;
-  	uint64_t const DELTA_INTERVAL = 30; // Tick rate in microseconds.
-  	Snake *snake0 = snake_new();
-
-  	int ch;
-	while (!QUIT) {
-		// Tick the world
-		gettimeofday(&now, NULL);
-		delta = ((now.tv_sec * 5000) + (now.tv_usec / 5000)) -
-		        ((start.tv_sec * 5000) + (start.tv_usec / 5000));
-		if (delta >= DELTA_INTERVAL) {
-		  	tick_world(world, delta);
-		  	tick_snake(snake0);
-		  	start = now;
-		}
-
+      tick_snake(snake);
 
 		//get User input and figure out direction with it
 		ch = getch();
@@ -174,12 +175,15 @@ void *HumanSnake(){
 		//mvprintw(2, COLS - COLS / 8, "Highscore: %i", snake0->highscore);
 		//mvprintw(LINES - 2, COLS / 16, "Press Q to quit");
 		refresh();
-	}
+	
 	return 0;
 }
 
 void *AISnake() {
+    Snake *snake = snake_new();
+
 	Snake *snake1 = snake_new();
+      tick_snake(snake);
 
 	//figure out where to go.
 	while (!QUIT){
@@ -206,7 +210,8 @@ void *AISnake() {
 	return 0;
 }
 
-void tick_snake(Snake *snake) {
+//METHODS:
+void tick_new_snake(Snake *snake){
   mvaddch(snake->posY, snake->posX, ' '); // Clear the old head charachter
 
   // Save previous position coordinates, useful when rendering the body/tail.
@@ -234,40 +239,6 @@ void tick_snake(Snake *snake) {
     break;
   }
 
-  // Check collision with the screen bounds
-  if (snake->posX >= COLS - 2 || snake->posX <= 0) {
-    // Update highscore
-    if (snake->points > snake->highscore) {
-      snake->highscore = snake->points;
-    }
-    snake_reset(snake);
-    return;
-  } else if (snake->posY >= LINES - 2 || snake->posY <= 0) {
-    // Update highscore
-    if (snake->points > snake->highscore) {
-      snake->highscore = snake->points;
-    }
-    snake_reset(snake);
-    return;
-  }
-  // TODO: Check collision with the tail
-
-  // Check collsion with apples
-  if (mvinch(snake->posY, snake->posX) == '@') {
-    ate = true;
-    snake->points += 10;
-    snake_append_body_part(snake);
-  }
-
-  //check if it crashes with another snake
-  if(mvinch(snake->posY, snake->posY) == 's'){
-  	if (snake->points > snake->highscore) {
-      snake->highscore = snake->points;
-    }
-    snake_reset(snake);
-    return;
-  }
-
   SnakeBodyPart *body_part =
       (SnakeBodyPart *)linked_list_pop_last(snake->body_list);
   mvaddch(body_part->posY, body_part->posX, ' '); // Clear the character
@@ -279,6 +250,74 @@ void tick_snake(Snake *snake) {
   // Draw head
   mvaddch(snake->posY, snake->posX, snake->chartype);
 }
+
+
+void tick_new_world(World *world, uint64_t delta){
+  int i = 0;
+  int j = 0;
+  int score = 0;
+  int winInt = 0; //number of snake, 0 if tie
+  for(i = 0; i < 4; i++){
+    for(j = 1; j < linked_list_length(world->snakes[i]); j++){
+      if(linked_list_get_value(world->snakes[i], 0) == linked_list_get_value(world->snakes[i], j)){
+        snake_reset(world->snakes[i]);
+      }
+    }
+    //see if apple is eaten
+    if (mvinch(world->snakes[i]->posY, world->snakes[i]->posX) == '@') {
+      ate = true;
+      world->snakes[i]->points += 10;
+      snake_append_body_part(world->snakes[i]);
+    }
+    //check for collisions with walls
+    if (world->snakes[i]->posX >= COLS - 2 || world->snakes[i]->posX <= 0) {
+      //kill snake
+      snake_reset(world->snakes[i]);
+      return;
+    } else if (world->snakes[i]->posY >= LINES - 2 || world->snakes[i]->posY <= 0) {
+      //kill snake
+      snake_reset(world->snakes[i]);
+      return;
+    }
+    //figure out winner
+    if(world->snakes[i]->points > score){
+      winInt = i+1;
+    } else if(world->snakes[i]->points == score){
+      winInt = 0;
+    }
+  }
+  //add new apple
+  if(ate){
+    Apple *apple = apple_new();
+    int rand_y = (rand() % (LINES - 2)) + 1;
+    int rand_x = (rand() % (COLS - 4)) + 2;
+    apple->x = rand_x;
+    apple->y = rand_y;
+    mvaddch(rand_y, rand_x, apple->chartype);
+    linked_list_add_front(world->apples_list, apple);
+    mainApple = apple;
+    ate = false;
+  }
+  //update winner
+  switch(winInt){
+    case 0: 
+      world->winner = "It's a tie!";
+      break;
+    case 1: 
+      world->winner = "You!";
+      break;
+    case 2: 
+      world->winner = "AISnake1";
+      break;
+    case 3: 
+      world->winner = "AISnake2";
+      break;
+    case 4: 
+      world->winner = "AISnake3";
+      break;
+  }
+}
+
 
 void snake_append_body_part(Snake *snake) {
   SnakeBodyPart *body_part = calloc(1, sizeof(SnakeBodyPart));
@@ -314,33 +353,16 @@ void snake_reset(Snake *snake) {
   snake_append_body_part(snake);
 }
 
-/** World management **/
-//CAN WE REMOVE THIS? JUST TICK SNAKES AND KEEP APPLES GLOBAL?
-void tick_world(World *world, uint64_t delta) {
-  static uint64_t tick_steps = 0;
-  tick_steps += delta;
 
-  if (tick_steps >= 3000) {
-    // Spawn Apple at random location every 3rd
-    // untill there are world->max_apples apple on screen.
-    //if (world->apples_list->length < world->max_apples) {
-    if (ate){
-      Apple *apple = apple_new();
-      int rand_y = (rand() % (LINES - 2)) + 1;
-      int rand_x = (rand() % (COLS - 4)) + 2;
-      apple->x = rand_x;
-      apple->y = rand_y;
-      mvaddch(rand_y, rand_x, apple->chartype);
-      linked_list_add_front(world->apples_list, apple);
-      mainApple = apple;
-      ate = false;
-    }
-    tick_steps = 0; // Reset when used
-  }
-}
+/** World management **/
+
+
+
+
 
 World *world_new() {
   World *world = calloc(1, sizeof(World));
+  world->winner = "It's a tie";
   world->apples_list = linked_list_new();
   world->max_apples = 255;
   Apple *apple = apple_new();

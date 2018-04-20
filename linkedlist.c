@@ -6,6 +6,10 @@ LinkedList *linked_list_new() {
   return list;
 }
 
+uint32_t linked_list_length(LinkedList *list){
+  return list->length;
+}
+
 void linked_list_dealloc(LinkedList *list) {
   Node *node;
   node = list->root_node;

@@ -44,3 +44,7 @@ void *linked_list_pop_last(LinkedList *list);
 void *linked_list_next(LinkedList *list);
 // Resets the iterator in the list to point at the beginning.
 void linked_list_reset(LinkedList *list);
+
+
+//get length of list
+uint32_t linked_list_length(LinkedList *list)

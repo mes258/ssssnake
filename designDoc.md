@@ -1,6 +1,13 @@
 # SSSSnake
 By Vincent Portelli and Michael Smith; For Beta V0
 
+TODO: 
+- [ ] semaphore 
+- [ ] fix snake threads
+- [ ] debug
+	- [ ] debug the new errors 
+		- [ ] continue to recursively debug stuff
+
 
 new idea: use semaphore to update world, make sure all snakes update only once, then update world again, etc
 
@@ -27,6 +34,14 @@ world:
 		* has list of four snakes
 		* has list of apples
 		* has winning snake
+```
+typedef struct {
+  LinkedList *apples_list;
+  uint8_t max_apples;
+  Snake snakes[4];
+  uint8_t winningSnake; //number 1,2,3,4 for winning snake
+} World;
+```
 
 snakes: 
 	* Make in threads, add to world (passed to thread)
@@ -40,16 +55,15 @@ snakes:
 		* has linked list of body coordinates
 		* doesn't have world (?)
 	
-tick world: 
+tick world:  
 	* go through array of snakes and check each snakes head against every other coordinate in all snakes
 		* if overlap, kill snake
 		* if head coordinate == apple coordinate, increase points, eat apple, etc
+			* change score
 			* add new apple and rand(x) and rand(y)
 	* Check for collisions with the wall? 
-	* gets scores from SHM, determine largest, display snake name
 tick snakes: 
 	* move forward 1 space
-	* update score in shm
 	* return the direction to world (?)
 
 
