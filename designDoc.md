@@ -2,6 +2,77 @@
 By Vincent Portelli and Michael Smith; For Beta V0
 
 
+new idea: use semaphore to update world, make sure all snakes update only once, then update world again, etc
+
+## New stuff: 
+
+World: 
+	* resolve snake collisions 
+	* resolve apple eating
+	* gets new apples
+	* determines winning snake with scores in SHM
+	* draw world
+Snakes: 
+	* determines next step
+	* add points to SHM
+	* send direction 
+
+
+## New structs 
+world: 
+	* Make in main function
+	* pass to snake threads
+	* update in main function
+	* In world: 
+		* has list of four snakes
+		* has list of apples
+		* has winning snake
+
+snakes: 
+	* Make in threads, add to world (passed to thread)
+	* Tick snakes in threads, with semaphores
+	* In snake: 
+		* has chartype
+		* has previous head position 
+		* has current head position
+		* has direction (UP,DOWN,LEFT,RIGHT)
+		* has points
+		* has linked list of body coordinates
+		* doesn't have world (?)
+	
+tick world: 
+	* go through array of snakes and check each snakes head against every other coordinate in all snakes
+		* if overlap, kill snake
+		* if head coordinate == apple coordinate, increase points, eat apple, etc
+			* add new apple and rand(x) and rand(y)
+	* Check for collisions with the wall? 
+	* gets scores from SHM, determine largest, display snake name
+tick snakes: 
+	* move forward 1 space
+	* update score in shm
+	* return the direction to world (?)
+
+
+
+### order: 
+world starts
+world stops
+snake1 starts
+snake1 stops
+snake2 starts
+snake2 stops
+snake3 starts
+snake3 stops
+snake4 starts
+snake4 stops
+world starts
+etc
+
+
+
+
+
+
 ## Files: 
 * `snake.c`
 	* This is the main file. It creates the board, the user snake and all the AI snakes. Run this file to play the game. /Note: As of 04/19/2018, this compiles but is very broken. After running, press "q" to quit./
