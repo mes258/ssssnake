@@ -92,17 +92,13 @@ int main() {
   WINDOW *border = create_win(LINES, COLS, 0, 0);
 
 
-
-  
-
-
 	//Create and call threads for snakes
 	//array of tids
 	pthread_t *tids;
 	tids = malloc(sizeof(pthread_t)*4);
 	int i = 0;
 	//create threads, one per snake; the snakes are made in the threads
-	for(i = 0; i < 4; i++){
+	for(i = 0; i < 1; i++){
 		if(i == 0){//create one human snake
 			pthread_create(&tids[i], NULL, HumanSnake, NULL);
 		}else{//the rest are AISnakes
@@ -111,7 +107,7 @@ int main() {
 	} 
 
 	//join threads
-	for(i = 0; i < 4; i++){
+	for(i = 0; i < 2; i++){
 		pthread_join(tids[i], NULL);
 	}
 	
@@ -174,9 +170,9 @@ void *HumanSnake(){
 		  	QUIT = true;
 		}
 
-		mvprintw(2, COLS / 16, "Score: %i", snake0->points);
-		mvprintw(2, COLS - COLS / 8, "Highscore: %i", snake0->highscore);
-		mvprintw(LINES - 2, COLS / 16, "Press Q to quit");
+		//mvprintw(2, COLS / 16, "Score: %i", snake0->points);
+		//mvprintw(2, COLS - COLS / 8, "Highscore: %i", snake0->highscore);
+		//mvprintw(LINES - 2, COLS / 16, "Press Q to quit");
 		refresh();
 	}
 	return 0;
