@@ -10,9 +10,6 @@
 
 #include "linkedlist.h"
 
-
-#define N 10
-#define BUFFER_SIZE 5
 //THREADs for snakes
 void *AISnake(void *world);
 void *HumanSnake(void *world);
@@ -75,35 +72,35 @@ Apple *mainApple;
 //WINDOW *border;
 //snakes are made in threads
 
-//mutex stuff:
-// Condition variable
+//monitor stuff:
+//Set initial values and declare variables
+#define BUFFER_SIZE 20
+
 struct condition {
   sem_t sem;
   int count;
 };
-
-// Global variables for monitor
-sem_t mutex, next;
-struct condition notfull, notempty;
+char buffer[BUFFER_SIZE];
+sem_t mutex, next, readers;
+struct condition notReading;
 int next_count = 0;
-// Global variables for application
-int buffer[BUFFER_SIZE];
-int readers[BUFFER_SIZE];
-int count = 0; // Number of items waiting in buffer
+int count = 0;
+int version = 0;
+int readcount = 0;
 
-// Function prototypes
-void cwait(struct condition *c); // Wait for condition variable
-void cpost(struct condition *c); // Signl/post condition variable
+void cwait(struct condition *c);
+void cpost(struct condition *c);
+
 
 
 //MAIN FUNCTION
 int main() {
-  notfull.count = 0;
-  notempty.count = 0;
-  sem_init(&(notfull.sem), 0, 0);
-  sem_init(&(notempty.sem), 0, 0);
-  sem_init(&next, 0, 0);
+  notReading.count = 0;
+  //set up semaphores
   sem_init(&mutex, 0, 1);
+  sem_init(&next, 0, 0);
+  sem_init(&(notReading.sem), 0, 0);
+  sem_init(&readers, 0, 1);
 
 
   //set up world
@@ -152,9 +149,11 @@ int main() {
   uint64_t const DELTA_INTERVAL = 30; // Tick rate in microseconds.
 
   while (!QUITGAME) {
+    //check if all snakes have gone
     sem_wait(&mutex);
-    if (count == BUFFER_SIZE)
-      cwait(&notfull);
+    if(readcount != 0){
+      cwait(&notReading);
+    }
     // Tick the world
     gettimeofday(&now, NULL);
     delta = ((now.tv_sec * 5000) + (now.tv_usec / 5000)) -
@@ -163,14 +162,12 @@ int main() {
       tick_world(world, delta);
       start = now;
     }
-    for(i = 0; i < numthreads; i++){
-      count++;
-      cpost(&notempty);
-    }
-    if (next_count > 0)
+    //leave so snakes can update
+    if(next_count > 0){
       sem_post(&next);
-    else
+    }else{
       sem_post(&mutex);
+    }
   }
 
 	//join threads
@@ -196,9 +193,10 @@ void *HumanSnake(World *world){
   }
 
   while (!QUITGAME){
-    if (count == 0){
-      cwait(&notempty);
-    }
+    sem_wait(&mutex);
+    sem_wait(&readers);
+    readcount++;
+    sem_post(&readers);
 
     tick_new_snake(snake);
     //get User input and figure out direction with it
@@ -228,14 +226,15 @@ void *HumanSnake(World *world){
         QUITGAME = true;
     }
 
-    if (readers[out] == 0)
-      readers[out] = 1;
-    else if (readers[out] == 1) {
-      readers[out] = 0;
-      count--;
-      cpost(&notfull);
+    sem_wait(&readers);
+    readcount--;
+    sem_post(&readers);
+
+    if(readcount == 0){
+      cpost(&notReading);
     }
-    if (next_count > 0)
+
+    if(next_count > 0)
       sem_post(&next);
     else
       sem_post(&mutex);
@@ -260,9 +259,10 @@ void *AISnake(World *world) {
   }
 	//figure out where to go.
 	while (!QUITGAME){
-    if (count == 0){
-      cwait(&notempty);
-    }
+    sem_wait(&mutex);
+    sem_wait(&readers);
+    readcount++;
+    sem_post(&readers);
 
 		//update snake location
 		tick_new_snake(snake);
@@ -283,14 +283,15 @@ void *AISnake(World *world) {
 			}
 		}
 
-    if (readers[out] == 0)
-      readers[out] = 1;
-    else if (readers[out] == 1) {
-      readers[out] = 0;
-      count--;
-      cpost(&notfull);
+    sem_wait(&readers);
+    readcount--;
+    sem_post(&readers);
+
+    if(readcount == 0){
+      cpost(&notReading);
     }
-    if (next_count > 0)
+
+    if(next_count > 0)
       sem_post(&next);
     else
       sem_post(&mutex);
