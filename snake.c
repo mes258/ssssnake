@@ -10,9 +10,7 @@
 
 #include "linkedlist.h"
 
-//THREADs for snakes
-void *AISnake(void *world);
-void *HumanSnake(void *world);
+
 
 //Set up structs 
 typedef enum { UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3 } direction;
@@ -85,13 +83,14 @@ sem_t mutex, next, readers;
 struct condition notReading;
 int next_count = 0;
 int count = 0;
-int version = 0;
 int readcount = 0;
 
 void cwait(struct condition *c);
 void cpost(struct condition *c);
 
-
+//THREADs for snakes
+void *AISnake(World *world);
+void *HumanSnake(World *world);
 
 //MAIN FUNCTION
 int main() {
@@ -203,23 +202,23 @@ void *HumanSnake(World *world){
     ch = getch();
     switch (ch) {
     case KEY_LEFT:
-      if (snake0->facing_direction != RIGHT) {
-          snake0->facing_direction = LEFT;
+      if (snake->facing_direction != RIGHT) {
+          snake->facing_direction = LEFT;
         }
         break;
     case KEY_RIGHT:
-        if (snake0->facing_direction != LEFT) {
-          snake0->facing_direction = RIGHT;
+        if (snake->facing_direction != LEFT) {
+          snake->facing_direction = RIGHT;
         }
         break;
     case KEY_UP:
-        if (snake0->facing_direction != DOWN) {
-          snake0->facing_direction = UP;
+        if (snake->facing_direction != DOWN) {
+          snake->facing_direction = UP;
         }
         break;
     case KEY_DOWN:
-        if (snake0->facing_direction != UP) {
-          snake0->facing_direction = DOWN;
+        if (snake->facing_direction != UP) {
+          snake->facing_direction = DOWN;
         }
         break;
     case 'q':
@@ -241,8 +240,8 @@ void *HumanSnake(World *world){
 
   }
       
-		//mvprintw(2, COLS / 16, "Score: %i", snake0->points);
-		//mvprintw(2, COLS - COLS / 8, "Highscore: %i", snake0->highscore);
+		//mvprintw(2, COLS / 16, "Score: %i", snake->points);
+		//mvprintw(2, COLS - COLS / 8, "Highscore: %i", snake->highscore);
 		//mvprintw(LINES - 2, COLS / 16, "Press Q to quit");
 		//refresh();
 	
