@@ -133,9 +133,9 @@ int main() {
   //create threads, one per snake; the snakes are made in the threads
   for(i = 0; i < numthreads; i++){
     if(i == 0){//create one human snake
-      pthread_create(&tids[i], NULL, HumanSnake, &world);
+      pthread_create(&tids[i], NULL, *HumanSnake, &world);
     }else{//the rest are AISnakes
-      pthread_create(&tids[i], NULL, AISnake, &world);
+      pthread_create(&tids[i], NULL, *AISnake, &world);
     }
   } 
 
