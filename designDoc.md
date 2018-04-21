@@ -2,8 +2,8 @@
 By Vincent Portelli and Michael Smith; For Beta V0
 
 TODO: 
-- [ ] semaphore 
-- [ ] fix snake threads
+- [ ] semaphore - look at HW8 p2 for formatting
+- [x] fix snake threads
 - [ ] debug
 	- [ ] debug the new errors 
 		- [ ] continue to recursively debug stuff

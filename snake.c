@@ -3,21 +3,22 @@
 #include <stdint.h>
 #include <stdlib.h> 
 #include <pthread.h>
+#include <stdio.h>
+#include <unistd.h>     
+#include <sys/types.h>  
+#include <semaphore.h>
 
 #include "linkedlist.h"
+
+
+#define N 10
+#define BUFFER_SIZE 5
 //THREADs for snakes
-void *AISnake();
-void *HumanSnake();
+void *AISnake(void *world);
+void *HumanSnake(void *world);
 
 //Set up structs 
 typedef enum { UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3 } direction;
-
-typedef struct {
-  LinkedList *apples_list;
-  uint8_t max_apples;
-  Snake snakes[4];
-  char *winner;
-} World;
 
 typedef struct {
   int chartype;
@@ -26,8 +27,14 @@ typedef struct {
   direction facing_direction;
   uint16_t points;
   LinkedList *body_list;
-  World *world;
 } Snake;
+
+typedef struct {
+  LinkedList *apples_list;
+  uint8_t max_apples;
+  Snake snakes[4];
+  char *winner;
+} World;
 
 typedef struct {
   int chartype;
@@ -47,13 +54,13 @@ WINDOW *create_win(int height, int width, int starty, int startx);
 void destroy_win(WINDOW *local_win);
 
 // Snake handling
-void tick_snake(Snake *snake);
+void tick_new_snake(Snake *snake);
 void snake_append_body_part(Snake *snake);
 Snake *snake_new();
 void snake_reset(Snake *snake);
 
 // World management
-void tick_world(World *world, uint64_t delta);
+void tick_new_world(World *world, uint64_t delta);
 void world_reset(World *world);
 World *world_new();
 
@@ -62,15 +69,43 @@ Apple *apple_new();
 
 //GLOBAL VARS
 bool ate = false; //used to determine when the apple is eaten by a snake
-bool QUIT = false; //end game if true
+bool QUITGAME = false; //end game if true
 //World *world = world_new();
 Apple *mainApple;
 //WINDOW *border;
 //snakes are made in threads
 
+//mutex stuff:
+// Condition variable
+struct condition {
+  sem_t sem;
+  int count;
+};
+
+// Global variables for monitor
+sem_t mutex, next;
+struct condition notfull, notempty;
+int next_count = 0;
+// Global variables for application
+int buffer[BUFFER_SIZE];
+int readers[BUFFER_SIZE];
+int count = 0; // Number of items waiting in buffer
+
+// Function prototypes
+void cwait(struct condition *c); // Wait for condition variable
+void cpost(struct condition *c); // Signl/post condition variable
+
 
 //MAIN FUNCTION
 int main() {
+  notfull.count = 0;
+  notempty.count = 0;
+  sem_init(&(notfull.sem), 0, 0);
+  sem_init(&(notempty.sem), 0, 0);
+  sem_init(&next, 0, 0);
+  sem_init(&mutex, 0, 1);
+
+
   //set up world
   srand(time(NULL));
   WINDOW *root = initscr(); /* initialize the curses library */
@@ -98,17 +133,17 @@ int main() {
   pthread_t *tids;
   tids = malloc(sizeof(pthread_t)*4);
   int i = 0;
+  int numthreads = 4;
   //create threads, one per snake; the snakes are made in the threads
-  for(i = 0; i < 1; i++){
+  for(i = 0; i < numthreads; i++){
     if(i == 0){//create one human snake
-      pthread_create(&tids[i], NULL, HumanSnake, NULL);
+      pthread_create(&tids[i], NULL, HumanSnake, &world);
     }else{//the rest are AISnakes
-      pthread_create(&tids[i], NULL, AISnake, NULL);
+      pthread_create(&tids[i], NULL, AISnake, &world);
     }
   } 
 
   //run it
-  bool QUIT = false;
 
   struct timeval start;
   struct timeval now;
@@ -116,7 +151,10 @@ int main() {
   uint64_t delta;
   uint64_t const DELTA_INTERVAL = 30; // Tick rate in microseconds.
 
-  while (!QUIT) {
+  while (!QUITGAME) {
+    sem_wait(&mutex);
+    if (count == BUFFER_SIZE)
+      cwait(&notfull);
     // Tick the world
     gettimeofday(&now, NULL);
     delta = ((now.tv_sec * 5000) + (now.tv_usec / 5000)) -
@@ -125,10 +163,18 @@ int main() {
       tick_world(world, delta);
       start = now;
     }
+    for(i = 0; i < numthreads; i++){
+      count++;
+      cpost(&notempty);
+    }
+    if (next_count > 0)
+      sem_post(&next);
+    else
+      sem_post(&mutex);
   }
 
 	//join threads
-	for(i = 0; i < 2; i++){
+	for(i = 0; i < numthreads; i++){
 		pthread_join(tids[i], NULL);
 	}
 	
@@ -139,73 +185,116 @@ int main() {
 	
 }
 
-void *HumanSnake(){
+void *HumanSnake(World *world){
   Snake *snake = snake_new();
+  int ch;
+  int i = 0;
+  for (i = 0; i < 4; i++){
+    if(linked_list_length(world->snakes[i]) == 0){
+      world->snakes[i] = snake;
+    }
+  }
 
-      tick_snake(snake);
+  while (!QUITGAME){
+    if (count == 0){
+      cwait(&notempty);
+    }
 
-		//get User input and figure out direction with it
-		ch = getch();
-		switch (ch) {
-		case KEY_LEFT:
-			if (snake0->facing_direction != RIGHT) {
-		    	snake0->facing_direction = LEFT;
-		  	}
-		  	break;
-		case KEY_RIGHT:
-		  	if (snake0->facing_direction != LEFT) {
-		    	snake0->facing_direction = RIGHT;
-		  	}
-		  	break;
-		case KEY_UP:
-		  	if (snake0->facing_direction != DOWN) {
-		    	snake0->facing_direction = UP;
-		  	}
-		  	break;
-		case KEY_DOWN:
-		  	if (snake0->facing_direction != UP) {
-		    	snake0->facing_direction = DOWN;
-		  	}
-		  	break;
-		case 'q':
-		  	QUIT = true;
-		}
+    tick_new_snake(snake);
+    //get User input and figure out direction with it
+    ch = getch();
+    switch (ch) {
+    case KEY_LEFT:
+      if (snake0->facing_direction != RIGHT) {
+          snake0->facing_direction = LEFT;
+        }
+        break;
+    case KEY_RIGHT:
+        if (snake0->facing_direction != LEFT) {
+          snake0->facing_direction = RIGHT;
+        }
+        break;
+    case KEY_UP:
+        if (snake0->facing_direction != DOWN) {
+          snake0->facing_direction = UP;
+        }
+        break;
+    case KEY_DOWN:
+        if (snake0->facing_direction != UP) {
+          snake0->facing_direction = DOWN;
+        }
+        break;
+    case 'q':
+        QUITGAME = true;
+    }
 
+    if (readers[out] == 0)
+      readers[out] = 1;
+    else if (readers[out] == 1) {
+      readers[out] = 0;
+      count--;
+      cpost(&notfull);
+    }
+    if (next_count > 0)
+      sem_post(&next);
+    else
+      sem_post(&mutex);
+
+  }
+      
 		//mvprintw(2, COLS / 16, "Score: %i", snake0->points);
 		//mvprintw(2, COLS - COLS / 8, "Highscore: %i", snake0->highscore);
 		//mvprintw(LINES - 2, COLS / 16, "Press Q to quit");
-		refresh();
+		//refresh();
 	
 	return 0;
 }
 
-void *AISnake() {
-    Snake *snake = snake_new();
-
-	Snake *snake1 = snake_new();
-      tick_snake(snake);
-
+void *AISnake(World *world) {
+  Snake *snake = snake_new();
+  int i = 0;
+  for (i = 0; i < 4; i++){
+    if(linked_list_length(world->snakes[i]) == 0){
+      world->snakes[i] = snake;
+    }
+  }
 	//figure out where to go.
-	while (!QUIT){
+	while (!QUITGAME){
+    if (count == 0){
+      cwait(&notempty);
+    }
+
 		//update snake location
-		tick_snake(snake1);
+		tick_new_snake(snake);
 
 		//change snake direction
-		if(snake1->posX < mainApple->x){
-			snake1->facing_direction = RIGHT;
-		}else if(snake1->posX > mainApple->x){
-			snake1->facing_direction = LEFT;
-		}else if(snake1->posX == mainApple->x){
+		if(snake->posX < mainApple->x){
+			snake->facing_direction = RIGHT;
+		}else if(snake->posX > mainApple->x){
+			snake->facing_direction = LEFT;
+		}else if(snake->posX == mainApple->x){
 			//once the x is correct, go to y
-			if(snake1->posY < mainApple->y){
-				snake1->facing_direction = UP;
-			}else if(snake1->posY > mainApple->y){
-				snake1->facing_direction = DOWN;
-			}else if(snake1->posY == mainApple->y){
+			if(snake->posY < mainApple->y){
+				snake->facing_direction = UP;
+			}else if(snake->posY > mainApple->y){
+				snake->facing_direction = DOWN;
+			}else if(snake->posY == mainApple->y){
 				//tick_snake will take care of this
 			}
 		}
-		//mvprintw(3, COLS / 16, "Score: %i", snake1->points);
+
+    if (readers[out] == 0)
+      readers[out] = 1;
+    else if (readers[out] == 1) {
+      readers[out] = 0;
+      count--;
+      cpost(&notfull);
+    }
+    if (next_count > 0)
+      sem_post(&next);
+    else
+      sem_post(&mutex);
+		//mvprintw(3, COLS / 16, "Score: %i", snake->points);
 	}
 	return 0;
 }
@@ -307,7 +396,7 @@ void tick_new_world(World *world, uint64_t delta){
       world->winner = "You!";
       break;
     case 2: 
-      world->winner = "AISnake1";
+      world->winner = "AISnake";
       break;
     case 3: 
       world->winner = "AISnake2";
@@ -409,5 +498,25 @@ void destroy_win(WINDOW *local_win) {
   wrefresh(local_win);
   delwin(local_win);
 }
+
+void cwait(struct condition *c) {
+  c->count++;
+  if (next_count > 0)
+    sem_post(&next);
+  else
+    sem_post(&mutex);
+  sem_wait(&(c->sem));
+  c->count--;
+}
+
+void cpost(struct condition *c) {
+  if (c->count > 0) {
+    next_count++;
+    sem_post(&(c->sem));
+    sem_wait(&next);
+    next_count--;
+  }
+}
+
 
 

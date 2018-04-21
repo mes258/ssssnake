@@ -47,4 +47,4 @@ void linked_list_reset(LinkedList *list);
 
 
 //get length of list
-uint32_t linked_list_length(LinkedList *list)
+uint32_t linked_list_length(LinkedList *list);
