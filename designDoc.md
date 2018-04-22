@@ -1,8 +1,47 @@
 # SSSSnake
 By Vincent Portelli and Michael Smith; For Beta V0
 
+
+Order of stuff in `snake.c`
+1. Imports
+2. Structs
+	1. direction
+	2. Snake
+	3. World
+	4. SnakeBodyPart
+	5. Apple
+3. Declarations
+	1. Window
+		1. Window
+		2. destroy window
+	2. Snake
+		1. tick_new_snake
+		2. snake_append_body_part
+		3. Snake *snake_new()
+		4. Snake reset
+	3. World
+		1. tick new world
+		2. world reset
+		3. World new world
+	4. Apple 
+		1. Apple new Apple 
+	5. Global Vars
+		1. ate
+		2. QUITGAME
+		3. mainApple
+	6. Monitor
+	7. cwait
+	8. cpost 
+	9. Threads
+		1. AIsnake
+		2. Human snake
+4. Main
+	
+
+
+
 TODO: 
-- [ ] semaphore - look at HW8 p2 for formatting
+- [ ] Clean up monitor with buffer, no need for buffer
 - [x] fix snake threads
 - [ ] debug
 	- [ ] debug the new errors 
