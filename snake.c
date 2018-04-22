@@ -181,6 +181,7 @@ int main() {
 	
 }
 
+//Snakes
 void *HumanSnake(void *world){
   Snake *snake = snake_new();
   int ch;
@@ -300,6 +301,32 @@ void *AISnake(void *world) {
 }
 
 //METHODS:
+/** Window handling **/
+// Allocs a new window and sets a box around it plus displays it
+WINDOW *create_win(int height, int width, int starty, int startx) {
+  WINDOW *local_win;
+
+  local_win = newwin(height, width, starty, startx);
+  box(local_win, 0, 0); /* 0, 0 gives default characters
+                         * for the vertical and horizontal
+                         * lines      */
+  wrefresh(local_win);  /* Show that box    */
+
+  return local_win;
+}
+
+// Deallocs the window and removes leftover artefacts
+void destroy_win(WINDOW *local_win) {
+  /* box(local_win, ' ', ' '); : This won't produce the desired
+   * result of erasing the window. It will leave it's four corners
+   * and so an ugly remnant of window.
+   */
+  wborder(local_win, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
+  wrefresh(local_win);
+  delwin(local_win);
+}
+
+/** Snake handling **/
 void tick_new_snake(Snake *snake){
   mvaddch(snake->posY, snake->posX, ' '); // Clear the old head charachter
 
@@ -340,7 +367,42 @@ void tick_new_snake(Snake *snake){
   mvaddch(snake->posY, snake->posX, snake->chartype);
 }
 
+void snake_append_body_part(Snake *snake) {
+  SnakeBodyPart *body_part = calloc(1, sizeof(SnakeBodyPart));
+  body_part->chartype = 's';
+  body_part->posX = snake->prev_posX;
+  body_part->posY = snake->prev_posY;
+  linked_list_add_front(snake->body_list, body_part);
+}
 
+Snake *snake_new() {
+  Snake *snake = calloc(1, sizeof(Snake));
+  snake_reset(snake);
+  return snake;
+}
+
+void snake_reset(Snake *snake) {
+  snake->posX = COLS / 2;
+  snake->posY = LINES / 2;
+  snake->points = 0;
+  snake->facing_direction = rand() % 4;
+  if (snake->body_list != NULL) {
+    // Remove all the snakes body parts from the screen if there are any
+    if (snake->body_list->length > 0) {
+      uint32_t body_length = snake->body_list->length;
+      for (size_t i = 0; i < body_length; i++) {
+        SnakeBodyPart *body_part = linked_list_pop_last(snake->body_list);
+        mvaddch(body_part->posY, body_part->posX, ' ');
+      }
+    }
+    linked_list_dealloc(snake->body_list);
+  }
+  snake->body_list = linked_list_new();
+  snake_append_body_part(snake);
+}
+
+
+/** World management **/
 void tick_new_world(World *world, uint64_t delta){
   int i = 0;
   int j = 0;
@@ -407,48 +469,6 @@ void tick_new_world(World *world, uint64_t delta){
   }
 }
 
-
-void snake_append_body_part(Snake *snake) {
-  SnakeBodyPart *body_part = calloc(1, sizeof(SnakeBodyPart));
-  body_part->chartype = 's';
-  body_part->posX = snake->prev_posX;
-  body_part->posY = snake->prev_posY;
-  linked_list_add_front(snake->body_list, body_part);
-}
-
-Snake *snake_new() {
-  Snake *snake = calloc(1, sizeof(Snake));
-  snake_reset(snake);
-  return snake;
-}
-
-void snake_reset(Snake *snake) {
-  snake->posX = COLS / 2;
-  snake->posY = LINES / 2;
-  snake->points = 0;
-  snake->facing_direction = rand() % 4;
-  if (snake->body_list != NULL) {
-    // Remove all the snakes body parts from the screen if there are any
-    if (snake->body_list->length > 0) {
-      uint32_t body_length = snake->body_list->length;
-      for (size_t i = 0; i < body_length; i++) {
-        SnakeBodyPart *body_part = linked_list_pop_last(snake->body_list);
-        mvaddch(body_part->posY, body_part->posX, ' ');
-      }
-    }
-    linked_list_dealloc(snake->body_list);
-  }
-  snake->body_list = linked_list_new();
-  snake_append_body_part(snake);
-}
-
-
-/** World management **/
-
-
-
-
-
 World *world_new() {
   World *world = calloc(1, sizeof(World));
   world->winner = "It's a tie";
@@ -474,31 +494,8 @@ Apple *apple_new() {
   return apple;
 }
 
-/** Window handling **/
-// Allocs a new window and sets a box around it plus displays it
-WINDOW *create_win(int height, int width, int starty, int startx) {
-  WINDOW *local_win;
 
-  local_win = newwin(height, width, starty, startx);
-  box(local_win, 0, 0); /* 0, 0 gives default characters
-                         * for the vertical and horizontal
-                         * lines			*/
-  wrefresh(local_win);  /* Show that box 		*/
-
-  return local_win;
-}
-
-// Deallocs the window and removes leftover artefacts
-void destroy_win(WINDOW *local_win) {
-  /* box(local_win, ' ', ' '); : This won't produce the desired
-   * result of erasing the window. It will leave it's four corners
-   * and so an ugly remnant of window.
-   */
-  wborder(local_win, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
-  wrefresh(local_win);
-  delwin(local_win);
-}
-
+//Monitor threads
 void cwait(struct condition *c) {
   c->count++;
   if (next_count > 0)
