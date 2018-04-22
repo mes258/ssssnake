@@ -158,7 +158,7 @@ int main() {
     delta = ((now.tv_sec * 5000) + (now.tv_usec / 5000)) -
             ((start.tv_sec * 5000) + (start.tv_usec / 5000));
     if (delta >= DELTA_INTERVAL) {
-      tick_world(world, delta);
+      tick_new_world(world, delta);
       start = now;
     }
     //leave so snakes can update
@@ -186,7 +186,7 @@ void *HumanSnake(void *world){
   int ch;
   int i = 0;
   for (i = 0; i < 4; i++){
-    if(linked_list_length(world->snakes[i]) == 0){
+    if(!(world->snakes[i]) == 0){
       world->snakes[i] = snake;
     }
   }
