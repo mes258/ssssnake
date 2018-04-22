@@ -482,6 +482,10 @@ World *world_new() {
   mvaddch(rand_y, rand_x, apple->chartype);
   linked_list_add_front(world->apples_list, apple);
   mainApple = apple;
+  int i = 0;
+  for(i = 0; i < 4; i++){
+    World->snakes[i] = snake_new();
+  }
   return world;
 }
 
