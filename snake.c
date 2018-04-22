@@ -187,7 +187,7 @@ void *HumanSnake(void *world){
   int ch;
   int i = 0;
   for (i = 0; i < 4; i++){
-    if(!(world->snakes[i]) == 0){
+    if(!(world->snakes[i])){
       world->snakes[i] = snake;
     }
   }
@@ -253,7 +253,7 @@ void *AISnake(void *world) {
   Snake *snake = snake_new();
   int i = 0;
   for (i = 0; i < 4; i++){
-    if(linked_list_length(world->snakes[i]) == 0){
+    if(!(world->snakes[i])){
       world->snakes[i] = snake;
     }
   }
