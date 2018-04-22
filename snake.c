@@ -89,8 +89,8 @@ void cwait(struct condition *c);
 void cpost(struct condition *c);
 
 //THREADs for snakes
-void *AISnake(World *world);
-void *HumanSnake(World *world);
+void *AISnake(void *world);
+void *HumanSnake(void *world);
 
 //MAIN FUNCTION
 int main() {
@@ -133,9 +133,9 @@ int main() {
   //create threads, one per snake; the snakes are made in the threads
   for(i = 0; i < numthreads; i++){
     if(i == 0){//create one human snake
-      pthread_create(&tids[i], NULL, *HumanSnake, &world);
+      pthread_create(&tids[i], NULL, HumanSnake, &world);
     }else{//the rest are AISnakes
-      pthread_create(&tids[i], NULL, *AISnake, &world);
+      pthread_create(&tids[i], NULL, AISnake, &world);
     }
   } 
 
@@ -181,7 +181,7 @@ int main() {
 	
 }
 
-void *HumanSnake(World *world){
+void *HumanSnake(void *world){
   Snake *snake = snake_new();
   int ch;
   int i = 0;
@@ -248,7 +248,7 @@ void *HumanSnake(World *world){
 	return 0;
 }
 
-void *AISnake(World *world) {
+void *AISnake(void *world) {
   Snake *snake = snake_new();
   int i = 0;
   for (i = 0; i < 4; i++){
