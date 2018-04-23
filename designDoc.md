@@ -44,39 +44,39 @@ By Vincent Portelli and Michael Smith; For Beta V0
 	* This makes a new snake and adds it to the world our "AI" algorithm controls the movement of this snake. Right now this algorithm is just "Go the apple's x coordinate, then go to its y coordinate". This will more complicated in the final version and may include snake avoidance mechanisms to prevent the AISnakes from crashing into each other.  
 
 ## Methods/functions:
-* Main
+* `main`
 	* Sets up game
 	* Creates board
 	* Creates four snakes, one human snake, three AI snakes
 	* Joins the threads and closes the world when done
-* create_win
+* `*create_win`
 	* makes the window based on terminal size
-* destroy_win
+* `destroy_win`
 	* Remove the window
-* tick_snake
+* `tick_new_snake`
 	* Moves the snake forward one space
 	* If the direction changes, change the head direction
-* snake_append_body_part
+* `snake_append_body_part`
 	* Adds a frame to the linked list snake
-* snake_new
+* `snake_new`
 	* creates a new snake 
 	* Calls snake_reset to place snake on board
-* snake_reset
+* `snake_reset`
 	* Centers snake on board
 	* Resets points
 	* Removes old body parts
 	* Adds a single body frame
-* tick_world
+* `tick_new_world`
 	* Moves the world forward one step
 	* If the first element of a snake has:
 		* Eaten an apple -> change points, add a body part, and spawn a new apple
 		* Hit a wall -> reset snake
 	* Check each snake's scores to figure out the winner or if there is a tie
-* world_new
+* `world_new`
 	* Makes a new world
 	* Add apples to list
 	* Add a new apple to the world
-* apple_new
+* `apple_new`
 	* Makes a new apple and assigns it a character and a points value
 
 ## Sample output: 
