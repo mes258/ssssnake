@@ -12,18 +12,32 @@
 
 
 
-//Set up structs 
+// Set up structs 
+
+// defines directions
 typedef enum { UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3 } direction;
 
+// snake:
+// chartype - the character that makes up the body of the snake
+// prev_pos (x/y) - previous position of head
+// pos (x/y) - position of head
+// facing direction
+// points - current score
+// body_list - list of body segments
 typedef struct {
   int chartype;
-  int prev_posX, prev_posY; // Previous position of the snake's head
+  int prev_posX, prev_posY;
   int posX, posY;
   direction facing_direction;
   uint16_t points;
   LinkedList *body_list;
 } Snake;
 
+// world:
+// apples_list - linked list of apples
+// max_apples - max number of apples at any time
+// snake_list - contains all snakes that are in the game
+// winner - currently winning snake
 typedef struct {
   LinkedList *apples_list;
   uint8_t max_apples;
@@ -31,11 +45,18 @@ typedef struct {
   char *winner;
 } World;
 
+// SnakeBodyPart: represents one segment of snake body
+// chartype - character to display
+// pos (x/y) - position in world
 typedef struct {
   int chartype;
   int posX, posY;
 } SnakeBodyPart;
 
+// Apple:
+// chartype - character to display
+// points_value
+// (x/y) - position
 typedef struct {
   int chartype;
   uint16_t points_value;
@@ -88,7 +109,8 @@ int readcount = 0;
 void cwait(struct condition *c);
 void cpost(struct condition *c);
 
-//THREADs for snakes
+// THREADS for snakes: there will be multiple computer controlled snakes
+//                     and one human controlled snake
 void *AISnake(void *world);
 void *HumanSnake(void *world);
 
@@ -140,13 +162,13 @@ int main() {
   } 
 
   //run it
-
   struct timeval start;
   struct timeval now;
   gettimeofday(&start, NULL);
   uint64_t delta;
   uint64_t const DELTA_INTERVAL = 30; // Tick rate in microseconds.
 
+  // main loop
   while (!QUITGAME) {
     //check if all snakes have gone
     sem_wait(&mutex);
@@ -181,7 +203,7 @@ int main() {
 	
 }
 
-//Snakes
+// human snake
 void *HumanSnake(void *world){
   Snake *snake = snake_new();
   int ch;
@@ -246,6 +268,7 @@ void *HumanSnake(void *world){
 	return 0;
 }
 
+// computer snake
 void *AISnake(void *world) {
   Snake *snake = snake_new();
 
@@ -374,6 +397,7 @@ Snake *snake_new() {
   return snake;
 }
 
+// when a snake dies
 void snake_reset(Snake *snake) {
   snake->posX = COLS / 2;
   snake->posY = LINES / 2;
@@ -463,6 +487,7 @@ void tick_new_world(World *world, uint64_t delta){
   }
 }
 
+// default world settings and initialization
 World *world_new() {
   World *world = calloc(1, sizeof(World));
   world->winner = "It's a tie";
