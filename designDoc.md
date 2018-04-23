@@ -27,10 +27,10 @@ By Vincent Portelli and Michael Smith; For Beta V0
   		* `LinkedList *body_list;` -> The body
 * World
 	* This struct is the framework for the board that the snakes exist in it. It contains:
-		* A list of apples in the world. 
-		* Total number of apples
-		* A linked list of snakes
-		* A String that displays the current winner 
+		* `LinkedList *apples_list;` -> A list of apples in the world. 
+		* `uint8_t max_apples;` -> Total number of apples
+		* `LinkedList *snake_list;` -> A linked list of snakes
+		* `char *winner;` -> A String that displays the current winner 
 
 * Snake Body Part
 	* Each body part has a character and a location (x,y)
@@ -69,7 +69,7 @@ By Vincent Portelli and Michael Smith; For Beta V0
 * tick_world
 	* Moves the world forward one step
 	* If the first element of a snake has:
-		* Eaten an apple -> change points, added a body part, and spawn a new apple
+		* Eaten an apple -> change points, add a body part, and spawn a new apple
 		* Hit a wall -> reset snake
 	* Check each snake's scores to figure out the winner or if there is a tie
 * world_new
