@@ -248,7 +248,7 @@ void *HumanSnake(void *world){
 
 void *AISnake(void *world) {
   Snake *snake = snake_new();
-  
+
   linked_list_add_front(world->snake_list, snake);
 
 	//figure out where to go.
@@ -327,8 +327,7 @@ void tick_new_snake(Snake *snake){
   // Save previous position coordinates, useful when rendering the body/tail.
   snake->prev_posY = snake->posY;
   snake->prev_posX = snake->posX;
-  // FIXME: Change moving speed depending on vertical/horizontal movement
-  // direction
+
   // Move snake in the facing direction
   switch (snake->facing_direction) {
   case UP:
@@ -402,9 +401,10 @@ void tick_new_world(World *world, uint64_t delta){
   int j = 0;
   int score = 0;
   int winInt = 0; //number of snake, 0 if tie
+  //compare the first value of each snake to all other values in all snakes (probably doesn't work)
   for(i = 0; i < 4; i++){
-    for(j = 1; j < linked_list_length(world->snakes[i]); j++){
-      if(linked_list_get_value(world->snakes[i], 0) == linked_list_get_value(world->snakes[i], j)){
+    for(j = 1; j < linked_list_length(linked_list_get_value(world->snake_list, i)); j++){
+      if(linked_list_get_value(linked_list_get_value(world->snake_list, i), 0) == linked_list_get_value(linked_list_get_value(world->snake_list, i), j)){
         snake_reset(world->snakes[i]);
       }
     }
