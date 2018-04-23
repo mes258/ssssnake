@@ -27,7 +27,7 @@ typedef struct {
 typedef struct {
   LinkedList *apples_list;
   uint8_t max_apples;
-  Snake snakes[4];
+  LinkedList *snake_list
   char *winner;
 } World;
 
@@ -185,12 +185,9 @@ int main() {
 void *HumanSnake(void *world){
   Snake *snake = snake_new();
   int ch;
-  int i = 0;
-  for (i = 0; i < 4; i++){
-    if(!(world->snakes[i])){
-      world->snakes[i] = snake;
-    }
-  }
+
+  linked_list_add_front(world->snake_list, snake);
+
 
   while (!QUITGAME){
     sem_wait(&mutex);
@@ -251,12 +248,9 @@ void *HumanSnake(void *world){
 
 void *AISnake(void *world) {
   Snake *snake = snake_new();
-  int i = 0;
-  for (i = 0; i < 4; i++){
-    if(!(world->snakes[i])){
-      world->snakes[i] = snake;
-    }
-  }
+  
+  linked_list_add_front(world->snake_list, snake);
+
 	//figure out where to go.
 	while (!QUITGAME){
     sem_wait(&mutex);
