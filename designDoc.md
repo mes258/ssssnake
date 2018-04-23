@@ -4,13 +4,15 @@ By Vincent Portelli and Michael Smith; For Beta V0
 
 ## Files: 
 * `snake.c`
-	* This is the main file. It creates the board, the user snake and all the AI snakes. Run this file to play the game. /Note: As of 04/19/2018, this compiles but is very broken. After running, press "q" to quit./
+	* This is the main file. It creates the board, the user snake and all the AI snakes. Run this file to play the game.
 * `linkedlist.c`
 	* This file has all methods for the linkedlist object, linked via `linkedlist.h`. Each snake in the game is a linked list
 * `linkedlist.h`
 	* This file has the abstractions for `linkedlist.c`
 * `makefile`
 	* Compiles `snake.c` into `snake`
+* `splitWork.md`
+	* This file describes how we split the work for the beta.
 * `designDoc.md`
 	* This file 
 
@@ -42,6 +44,9 @@ By Vincent Portelli and Michael Smith; For Beta V0
 	* Makes a new snake, adds it to the world, and lets the player controls this snake
 * AISnake
 	* This makes a new snake and adds it to the world our "AI" algorithm controls the movement of this snake. Right now this algorithm is just "Go the apple's x coordinate, then go to its y coordinate". This will more complicated in the final version and may include snake avoidance mechanisms to prevent the AISnakes from crashing into each other.  
+
+## Monitors:
+	* We are using a monitor to update the world and the snakes at a constant pace. Declared around lines 95-110 in `snake.c`, the monitor will only let the world update once all four snakes have updated. This is not currently functional, however, it is in several parts of the code. 
 
 ## Methods/functions:
 * `main`
