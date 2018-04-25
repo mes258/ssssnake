@@ -6,6 +6,8 @@
 #include<sys/wait.h>
 
 #include "linkedlist.h"
+#include "linkedlist.c"
+
 
 int SIZE = 20;    // size of world
 int NUMSNAKES = 2;// number of snakes
@@ -14,42 +16,40 @@ char A = '@';     // character that represents apple
 char EMPTY = '.'; // character that represents empty
 
 
-/*
-typedef enum { UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3 } direction;
-
-typedef struct {
-  char chartype;
-  int posX, posY;
-} SnakeBodyPart;
-
-typedef struct {
-  char chartype;
-  int prev_posX, prev_posY;
-  int posX, posY;
-  direction facing_direction;
-  uint16_t points;
-  LinkedList *body_list;
-} Snake;
+void snake_append_body_part(Snake *snake) {
+  printf("TEST1");
+  SnakeBodyPart *body_part = calloc(1, sizeof(SnakeBodyPart));
+  body_part->chartype = 's';
+  body_part->posX = snake->prev_posX;
+  body_part->posY = snake->prev_posY;
+  linked_list_add_front(snake->bodylist, body_part);
+}
 
 void snake_reset(Snake *snake) {
+  printf("TEST2");
   snake->posX = SIZE / 2;
   snake->posY = SIZE / 2;
   snake->points = 0;
   snake->facing_direction = rand() % 4;
-  if (snake->body_list != NULL) {
+  /*if (snake->bodylist != NULL) {
     // Remove all the snakes body parts from the screen if there are any
-    if (snake->body_list->length > 0) {
-      uint32_t body_length = snake->body_list->length;
+    if (snake->bodylist->length > 0) {
+      uint32_t body_length = snake->bodylist->length;
       for (size_t i = 0; i < body_length; i++) {
-        SnakeBodyPart *body_part = linked_list_pop_last(snake->body_list);
-        mvaddch(body_part->posY, body_part->posX, ' ');
+        SnakeBodyPart *body_part = linked_list_pop_last(snake->bodylist);
+        body_part->posY = ' ';
+        body_part->posX = ' ';
       }
     }
-    linked_list_dealloc(snake->body_list);
-  }
-  snake->body_list = linked_list_new();
+    printf("TEST3");
+    linked_list_dealloc(snake->bodylist);
+  }*/
+  snake->bodylist = linked_list_new();
   snake_append_body_part(snake);
+  printf("TEST4");
 }
+
+
 
 Snake *snake_new() {
   Snake *snake = calloc(1, sizeof(Snake));
@@ -57,16 +57,9 @@ Snake *snake_new() {
   return snake;
 }
 
-SnakeBodyPart *snake_body_part_new() {
-  SnakeBodyPart *sbp = calloc(1, sizeof(SnakeBodyPart));
-  sbp.chartype = 'X'
-  sbp.posX = 0;
-  sbp.posY = 0;
-  return sbp;
-}
-*/
 
 void print_world(char world[SIZE][SIZE]){
+  printf("TEST5");
   int i;
   int j;
   for(i = 0; i < SIZE; i++){
@@ -84,8 +77,7 @@ void print_world(char world[SIZE][SIZE]){
   fflush(stdout);
 }
 
-void draw_world(char world[SIZE][SIZE], int snakes[NUMSNAKES][SIZE*SIZE][2] ){
-  
+void draw_world(char world[SIZE][SIZE], LinkedList* snakes ){
   int i;
   int j;
 
@@ -95,25 +87,43 @@ void draw_world(char world[SIZE][SIZE], int snakes[NUMSNAKES][SIZE*SIZE][2] ){
     }
   }
 
-  for(i = 0; i < NUMSNAKES; i++){
+  int x,y;
+  for(i = 0; i < snakes->length; i++){
+    Snake* snake = linked_list_get_value(snakes, i);
     j = 0;
-    while(snakes[i][j][0] < SIZE){
-      int x = snakes[i][j][0];
-      int y = snakes[i][j][1];
-      printf("%d, %d, %d\n",i,j,x);
+    for(j = 0; j < snake->bodylist->length; j++){
+      int k = 0;
+      for(k = 0; k < snake->bodylist->length; k++){
+        if (snake->bodylist != NULL) {
+          x = linked_list_get_BL_value(snake->bodylist, k)->posX;
+          y = linked_list_get_BL_value(snake->bodylist, k)->posY;
+        }
+      }
+    }
+      
+      //printf("%d, %d, %d\n",i,j,x);
       world[x][y] = S;
       j++;
-    }
+    
   }
 
 }
 
-
-
+LinkedList *snake_List; 
 
 int main(int argc, char *argv[]) {
+  printf("running!");
+
   char world[SIZE][SIZE];
 
+  snake_List = calloc(1,sizeof(Snake));
+
+  Snake a = *snake_new();
+
+  linked_list_add_snake_back(snake_List, &a);
+
+
+  /*
   int snakes[NUMSNAKES][SIZE*SIZE][2];
 
   snakes[0][0][0] = 3;
@@ -145,10 +155,13 @@ int main(int argc, char *argv[]) {
 
   snakes[1][2][0] = SIZE;
   snakes[1][2][1] = SIZE;
+  */
+  
 
-  draw_world(world, snakes);
+  draw_world(world, snake_List);
 
   print_world(world);
+  /*
 
   int fd1[2];
   pid_t p;
@@ -176,17 +189,14 @@ int main(int argc, char *argv[]) {
       printf("%d\n",n);
     }
     
-  }
-  else
-  {
+  }else{
     int i;
-    for(i = 0; i < 10; i++){
+    for(i = 5; i < 10; i++){
       write(fd1[1],&i,sizeof(i));
     }
-
-    exit(0);
+    return 0;
   }
 
 
-  
+  */
 }
