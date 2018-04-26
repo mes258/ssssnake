@@ -118,7 +118,8 @@ int *get_coordinate_value(LinkedList *bodylist, uint32_t index, int val){
   //  printf("networks3\n");
   //  node = node->next_node;
   //}
-  //node->posX = 10;
+  //node->posX = 5;
+  //node->posY = 15;
   printf("networks4\n");
   if(val == 0){
     return node->posX; 
