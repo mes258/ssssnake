@@ -62,8 +62,11 @@ SnakeBodyPart *linked_list_get_BL_value(LinkedList *list, uint32_t index);
 
 // Returns the value from the n:th node in the list.
 void *linked_list_get_value(LinkedList *list, uint32_t index);
+
 // Returns the first value in the list w/o removing it.
 void *linked_list_get_first(LinkedList *list);
+
+
 // Returns the last value in the list w/o removing.
 void *linked_list_get_last(LinkedList *list);
 // Returns the first value in the list and removes it.

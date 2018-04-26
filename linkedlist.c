@@ -67,27 +67,64 @@ void linked_list_add_back(LinkedList *list, void *value) {
 
 void *linked_list_get_value(LinkedList *list, uint32_t index) {
   printf("TEST7\n");
+  printf("abcd\n");
   if (index >= list->length) {
+    printf("hello1\n");
     return NULL;
   }
+  printf("hello0\n");
   Node *node;
   node = list->root_node;
+  printf("hello80\n");
   for (uint32_t i = 0; i <= index; i++) {
+    printf("hello81\n");
     node = node->next_node;
   }
+  printf("hello82\n");
   return node->value;
 }
 
 SnakeBodyPart *linked_list_get_BL_value(LinkedList *list, uint32_t index) {
+  printf("TEST10\n");
   if (index >= list->length) {
     return NULL;
   }
+  printf("new0\n");
   Node *node;
   node = list->root_node;
-  for (uint32_t i = 0; i <= index; i++) {
+  printf("new1\n");
+  /*for (uint32_t i = 0; i <= index; i++) {
+    printf("new2\n");
     node = node->next_node;
-  }
+  }*/
+  printf("new3\n");
   return node->value;
+}
+
+int *get_coordinate_value(LinkedList *bodylist, uint32_t index, int val){
+  //if val == 0, get x, else get y
+  //take in 
+  printf("networks0\n");
+  if (index >= bodylist->length) {
+    return NULL;
+  }
+  printf("networks1\n");
+  //SnakeBodyPart *node;
+  //node = bodylist->root_node;
+  SnakeBodyPart *node = linked_list_get_BL_value(bodylist, index);
+
+  //printf("networks2\n");
+  //for (uint32_t i = 0; i <= index; i++) {
+  //  printf("networks3\n");
+  //  node = node->next_node;
+  //}
+  //node->posX = 10;
+  printf("networks4\n");
+  if(val == 0){
+    return node->posX; 
+  }else{
+    return node->posY; 
+  }
 }
 
 void *linked_list_get_first(LinkedList *list) { return list->root_node->value; }
@@ -189,6 +226,7 @@ void snake_reset(Snake *snake) {
   }
   snake->bodylist = linked_list_new();
   snake_append_body_part(snake);
+  printf("snakelength: %d \n", snake->bodylist->length);
   printf("TEST4\n");
 }
 
@@ -210,25 +248,52 @@ void draw_world(char world[SIZE][SIZE], LinkedList* snakes ){
   }
 
   int x,y;
-  for(i = 0; i < snakes->length; i++){
+  for(i = 0; i < 1; i++){
+    printf("hi0\n");
     Snake* snake = linked_list_get_value(snakes, i);
+    printf("hi1\n");
     j = 0;
     for(j = 0; j < snake->bodylist->length; j++){
+      printf("hi2\n");
       int k = 0;
       for(k = 0; k < snake->bodylist->length; k++){
+        printf("hi3\n");
         if (snake->bodylist != NULL) {
-          x = linked_list_get_BL_value(snake->bodylist, k)->posX;
-          y = linked_list_get_BL_value(snake->bodylist, k)->posY;
+          printf("hi4\n");
+          //get_coordinate_value(LinkedList *snake, uint32_t index, int val)
+          x = get_coordinate_value(snake->bodylist, k, 0);
+          printf("hi5\n");
+          y = get_coordinate_value(snake->bodylist, k, 1);
+          printf("hi6\n");
         }
       }
     }
-      
+      printf("hi7\n");
       //printf("%d, %d, %d\n",i,j,x);
       world[x][y] = S;
       j++;
     
   }
+  printf("efesdf\n");
+}
 
+void print_world(char world[SIZE][SIZE]){
+  printf("TEST5\n");
+  int i;
+  int j;
+  for(i = 0; i < SIZE; i++){
+    for(j = 0; j < SIZE; j++){
+      if(world[i][j] == EMPTY)
+        printf(" .");
+      else if(world[i][j] == S)
+        printf(" X");
+      else if(world[i][j] == A)
+        printf(" @");
+    }
+    printf("\n");
+  }
+  printf("--------- --------- --------- ---------\n");
+  fflush(stdout);
 }
 
 int main(){
@@ -236,9 +301,24 @@ int main(){
   snake_List = calloc(1,sizeof(Snake));
 
   Snake a = *snake_new();
+  Snake b = *snake_new();
+
+  snake_append_body_part(&a);
 
   linked_list_add_snake_back(snake_List, &a);
+  linked_list_add_snake_back(snake_List, &b);
+
+  snake_append_body_part(&a);
+
+  printf("length: %d \n", linked_list_length(linked_list_get_value(snake_List, 0)));
+  printf("length: %d \n", linked_list_length(snake_List));
+
+
   char world[SIZE][SIZE];
+  printf("made world, will draw now\n" );
   draw_world(world, snake_List);
+  printf("printing world\n");
+  print_world(world);
+  printf("done!\n");
   return 0;
 }
