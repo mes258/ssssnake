@@ -4,10 +4,16 @@
 #include<sys/types.h>
 #include<string.h>
 #include<sys/wait.h>
+#include<time.h>
 
+// when you change these number/size variables,
+// you also have to change the size of the global variables below
+// (as described in the comments)
 
 int SIZE = 20;    // size of world
 int NUMSNAKES = 3;// number of snakes
+int NUMAPPS = 2;  // number of apples
+
 char S = 'X';     // character that represents snake
 char A = '@';     // character that represents apple
 char EMPTY = '.'; // character that represents empty
@@ -16,7 +22,24 @@ char world[20][20];        // needs to be [SIZE][SIZE]
 int snakes[3][20*20][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
 int directions[3];       // needs to be [NUMSNAKES]
                         // also: directions are: { 0 = +x ; 1 = +y ; 2 = -x ; 3 = -y }
+int apples[2][2];   //  \\ needs to be [NUMAPPS][2]
 
+void snake_grow(int n){
+  int i = 0;
+  int j = 0;
+
+  while(snakes[n][j][0] > -1){ // find the end of the snake
+    j++;
+  }
+
+  for(i = 0; i < 3; i++){
+    snakes[n][j+i][0] = SIZE; // add an 3 available segments, but put them outside of the map (they'll get used later)
+    snakes[n][j+i][1] = SIZE;
+  }
+
+  snakes[n][j+i][0] = -1; // remember to mark the new end of the snake
+  snakes[n][j+i][1] = -1;
+}
 
 void draw_world(){
   
@@ -40,6 +63,25 @@ void draw_world(){
     }
   }
 
+  for(i = 0; i < NUMAPPS; i++){
+    int x = apples[i][0];
+    int y = apples[i][1];
+    world[x][y] = A;
+  }
+
+}
+
+void reset_apple(int n){
+  int x = rand() % SIZE;
+  int y = rand() % SIZE;
+
+  while(world[x][y] != EMPTY){
+    x = rand() % SIZE;
+    y = rand() % SIZE;
+  }
+  
+  apples[n][0] = x;
+  apples[n][1] = y;
 }
 
 void reset_snake(int n){
@@ -86,6 +128,7 @@ void check_snakes(){
     if(x1 >= SIZE || y1 >= SIZE || x1 < 0 || y1 < 0){ // check if snake hits wall
       collided[i] = 1;
     }
+
     for(j = 0; j < NUMSNAKES; j++){
       k = 0;
       while(snakes[j][k][0] > -1){
@@ -98,6 +141,13 @@ void check_snakes(){
           }
         }
         k++;
+      }
+    }
+
+    for(j = 0; j < NUMAPPS; j++){
+      if(x1 == apples[j][0] && y1 == apples[j][1]){
+        snake_grow(i);
+        reset_apple(j);
       }
     }
     
@@ -164,40 +214,68 @@ void snake_move_foreward(int n){
   }
 }
 
-void snake_grow(int n){
-  int i = 0;
-  int j = 0;
+int get_next_move(int n){
+  
+}
 
-  while(snakes[n][j][0] > -1){ // find the end of the snake
-    j++;
+void determine_directions(){
+  int i;
+  int pipes[NUMSNAKES][2];
+  pid_t pid;
+
+  for(i = 0; i < NUMSNAKES; i++){ // set up pipes
+    if (pipe(pipes[i])==-1){
+      fprintf(stderr, "Pipe Failed #%d\n",i );
+      exit(0);
+    }
   }
 
-  for(i = 0; i < 3; i++){
-    snakes[n][j+i][0] = SIZE; // add an 3 available segments, but put them outside of the map (they'll get used later)
-    snakes[n][j+i][1] = SIZE;
+  for(i = 0; i < NUMSNAKES; i++){ // make threads
+    pid = fork();
+
+    if (pid < 0){
+      fprintf(stderr, "Fork Failed" );
+      exit(0);
+    }
+
+    if(pid != 0){
+
+      /* this does some pseudo-random BS
+      if(rand()%4 == 0){
+        directions[i] += (rand()%3)-1;
+
+        if(directions[i] > 3){
+          directions[i] = 0;
+        }
+        if(directions[i] < 0){
+          directions[i] = 3;
+        }
+      }
+      */
+
+      directions[i] = get_next_move(i);
+
+      printf("#%d writes %d\n",i,directions[i]);
+      write( pipes[i][1], &directions[i], sizeof(directions[i]) ); // write new direction to pipe
+      close( pipes[i][1] );
+
+      exit(0); // destroy thread
+    }
   }
 
-  snakes[n][j+i][0] = -1; // remember to mark the new end of the snake
-  snakes[n][j+i][1] = -1;
+  for(i = 0; i < NUMSNAKES; i++){
+    read( pipes[i][0], &directions[i], sizeof(directions[i]) ); // read and put in directions
+    close( pipes[i][0] );
+    printf("#%d reads %d\n",i,directions[i]);
+  }
+
 }
 
 void move_snakes(){
-
-  // code here for the snakes to decide where to move
+  
+  determine_directions();
 
   int j;
-  for(j = 0; j < NUMSNAKES; j++){
-    if(rand()%4 == 0){
-      directions[j] += (rand()%3)-1;
-
-      if(directions[j] > 3){
-        directions[j] = 0;
-      }
-      if(directions[j] < 0){
-        directions[j] = 3;
-      }
-    }
-  }
 
   for(j = 0; j < NUMSNAKES; j++){
     if(rand()%4 == 0){
@@ -212,11 +290,17 @@ void move_snakes(){
 
 int main(int argc, char *argv[]) {
 
-  directions[0] = 0;
+  apples[0][0] = 2; // set random positions for apples
+  apples[0][1] = 5;
+
+  apples[1][0] = 14;
+  apples[1][1] = 13;
+
+  directions[0] = 0; // set random directions for snakes
   directions[1] = 2;
   directions[2] = 0;
 
-  snakes[0][0][0] = 3;
+  snakes[0][0][0] = 3; // put some snakes in the world
   snakes[0][0][1] = 3;
 
   snakes[0][1][0] = 3;
@@ -266,12 +350,12 @@ int main(int argc, char *argv[]) {
 
   int i;
 
-  for(i = 0; i < 30; i++){
+  for(i = 0; i < 90; i++){
     move_snakes();
     check_snakes();
     draw_world();
     print_world();
-    sleep(1);
+    usleep(200000);
 
   }
 
@@ -280,7 +364,7 @@ int main(int argc, char *argv[]) {
 
   if (pipe(fd1)==-1)
   {
-    fprintf(stderr, "Pipe Failed" );
+    fprintf(stderr, "Pipe Failed #%d\n",i );
     return 1;
   }
 
