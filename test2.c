@@ -32,8 +32,8 @@ void snake_grow(int n){
     j++;
   }
 
-  for(i = 0; i < 3; i++){
-    snakes[n][j+i][0] = SIZE; // add an 3 available segments, but put them outside of the map (they'll get used later)
+  for(i = 0; i < 1; i++){
+    snakes[n][j+i][0] = SIZE; // add [max i] available segments, but put them outside of the map (they'll get used later)
     snakes[n][j+i][1] = SIZE;
   }
 
@@ -215,7 +215,119 @@ void snake_move_foreward(int n){
 }
 
 int get_next_move(int n){
-  
+
+  int path[SIZE][SIZE];
+  int queue[SIZE*SIZE][2];
+/*
+  in this array we will store all of the information needed for a depth first search:
+  1. mark all locations as 0
+  2. add the (empty) locations around the starting position to queue + mark start as visited
+  3. mark each of the adacent locations with the direction to get back to the current spot:
+
+        4
+      3 x 1
+        2
+
+  4. for each item in the queue, repeat step 2 and 3 until you find an apple
+  5. when you find an apple, trace your way back to the start, then move in the direction that
+     you need to go to get to the apple
+*/
+  int i;
+  int j;
+  for(i = 0; i < SIZE; i++){
+    for(j = 0; j < SIZE; j++){
+      path[i][j] = 0;
+    }
+  }
+
+  int startx = snakes[n][0][0];
+  int starty = snakes[n][0][1];
+
+  int x = startx;
+  int y = starty;
+
+  int nextx;
+  int nexty;
+
+  queue[0][0] = startx;
+  queue[0][1] = starty;
+
+  int ql = 0; // queue length: the last entry in the queue
+  int qp = 0; // the current position in the queue
+
+  while(world[x][y] != A){ // build paths until an apple is found
+    if(x > 0){
+      if(world[x-1][y] != S && path[x-1][y] == 0){
+        path[x-1][y] = 4;
+        ql += 1;
+        queue[ql][0] = x-1;
+        queue[ql][1] = y;
+      }
+    }
+    if(x < SIZE-1){
+      if(world[x+1][y] != S && path[x+1][y] == 0){
+        path[x+1][y] = 2;
+        ql += 1;
+        queue[ql][0] = x+1;
+        queue[ql][1] = y;
+      }
+    }
+    if(y > 0){
+      if(world[x][y-1] != S && path[x][y-1] == 0){
+        path[x][y-1] = 3;
+        ql += 1;
+        queue[ql][0] = x;
+        queue[ql][1] = y-1;
+      }
+    }
+    if(y < SIZE-1){
+      if(world[x][y+1] != S && path[x][y+1] == 0){
+        path[x][y+1] = 1;
+        ql += 1;
+        queue[ql][0] = x;
+        queue[ql][1] = y+1;
+      }
+    }
+    qp+=1;
+    x = queue[qp][0];
+    y = queue[qp][1];
+  }
+
+  nextx = x;
+  nexty = y;
+
+  while(nextx != startx || nexty != starty){
+    printf("#%d, %d,%d - %d,%d\n",n,startx,starty,nextx,nexty);
+    x = nextx;
+    y = nexty;
+    if(path[x][y] == 2){
+      nextx = x-1;
+    }
+    if(path[x][y] == 4){
+      nextx = x+1;
+    }
+    if(path[x][y] == 1){
+      nexty = y-1;
+    }
+    if(path[x][y] == 3){
+      nexty = y+1;
+    }
+  }
+  printf("#%d, %d,%d - %d,%d\n",n,startx,starty,nextx,nexty);
+
+  if(path[x][y] == 2){
+    return 0;
+  }
+  if(path[x][y] == 4){
+    return 2;
+  }
+  if(path[x][y] == 1){
+    return 1;
+  }
+  if(path[x][y] == 3){
+    return 3;
+  }
+  return 0;
 }
 
 void determine_directions(){
@@ -276,13 +388,6 @@ void move_snakes(){
   determine_directions();
 
   int j;
-
-  for(j = 0; j < NUMSNAKES; j++){
-    if(rand()%4 == 0){
-      snake_grow(j);
-    }
-  }
-
   for(j = 0; j < NUMSNAKES; j++){
     snake_move_foreward(j);
   }
