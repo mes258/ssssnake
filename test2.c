@@ -10,20 +10,21 @@
 // you also have to change the size of the global variables below
 // (as described in the comments)
 
-int SIZE = 20;    // size of world
+int SIZE = 30;    // size of world
 int NUMSNAKES = 3;// number of snakes
-int NUMAPPS = 2;  // number of apples
-int GROW = 3;     // number of segments added per apple
+int NUMAPPS = 10;  // number of apples
+int GROW = 2;     // number of segments added per apple
+int DELAY = 200000; // pause in microseconds
 
 char S = 'X';     // character that represents snake
 char A = '@';     // character that represents apple
 char EMPTY = '.'; // character that represents empty
 
-char world[20][20];        // needs to be [SIZE][SIZE]
-int snakes[3][20*20][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
+char world[30][30];        // needs to be [SIZE][SIZE]
+int snakes[3][30*30][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
 int directions[3];       // needs to be [NUMSNAKES]
                         // also: directions are: { 0 = +x ; 1 = +y ; 2 = -x ; 3 = -y }
-int apples[2][2];   //  \\ needs to be [NUMAPPS][2]
+int apples[10][2];   //  \\ needs to be [NUMAPPS][2]
 
 void snake_grow(int n){
   int i = 0;
@@ -58,7 +59,6 @@ void draw_world(){
     while(snakes[i][j][0] > -1){
       int x = snakes[i][j][0];
       int y = snakes[i][j][1];
-      printf("%d, %d, %d\n",i,j,x);
       world[x][y] = S;
       j++;
     }
@@ -201,7 +201,6 @@ void snake_move_foreward(int n){
 
   while(snakes[n][j][0] > -1){
 
-    printf("sn:%d - %d,%d\n",n,newx,newy);
     tempx = snakes[n][j][0];
     tempy = snakes[n][j][1];
 
@@ -256,7 +255,7 @@ int get_next_move(int n){
   int ql = 0; // queue length: the last entry in the queue
   int qp = 0; // the current position in the queue
 
-  while(world[x][y] != A ){ // build paths until an apple is found
+  while(world[x][y] != A && qp <= ql){ // build paths until an apple is found or a dead end is reached
     if(x > 0){
       if(world[x-1][y] != S && path[x-1][y] == 0){
         path[x-1][y] = 4;
@@ -292,7 +291,6 @@ int get_next_move(int n){
     qp+=1;
     x = queue[qp][0];
     y = queue[qp][1];
-    printf("#%d, %d,%d\n",n,ql,qp);
   }
 
   nextx = x;
@@ -317,17 +315,15 @@ int get_next_move(int n){
 
   if(path[x][y] == 2){
     return 0;
-  }
-  if(path[x][y] == 4){
+  }else if(path[x][y] == 4){
     return 2;
-  }
-  if(path[x][y] == 1){
+  }else if(path[x][y] == 1){
     return 1;
-  }
-  if(path[x][y] == 3){
+  }else if(path[x][y] == 3){
     return 3;
+  }else{
+    return 0;
   }
-  return 0;
 }
 
 void determine_directions(){
@@ -382,112 +378,35 @@ void move_snakes(){
 
 int main(int argc, char *argv[]) {
 
-  apples[0][0] = 2; // set random positions for apples
-  apples[0][1] = 5;
-
-  apples[1][0] = 14;
-  apples[1][1] = 13;
-
-  directions[0] = 0; // set random directions for snakes
-  directions[1] = 2;
-  directions[2] = 0;
-
-  snakes[0][0][0] = 3; // put some snakes in the world
-  snakes[0][0][1] = 3;
-
-  snakes[0][1][0] = 3;
-  snakes[0][1][1] = 4;
-
-  snakes[0][2][0] = 3;
-  snakes[0][2][1] = 5;
-
-  snakes[0][3][0] = 2;
-  snakes[0][3][1] = 5;
-
-  snakes[0][4][0] = 1;
-  snakes[0][4][1] = 5;
-
-  snakes[0][5][0] = 1;
-  snakes[0][5][1] = 6;
-
-  snakes[0][6][0] = -1; // -1 means end of snake
-  snakes[0][6][1] = -1;
-
-  snakes[1][0][0] = 10;
-  snakes[1][0][1] = 8;
-
-  snakes[1][1][0] = 10;
-  snakes[1][1][1] = 7;
-
-  snakes[1][2][0] = -1; // -1 means end of snake
-  snakes[1][2][1] = -1;
-
-  snakes[2][0][0] = 10;
-  snakes[2][0][1] = 7;
-
-  snakes[2][1][0] = 10;
-  snakes[2][1][1] = 6;
-
-  snakes[2][2][0] = -1; // -1 means end of snake
-  snakes[2][2][1] = -1;
-
-  draw_world();
-
-  print_world();
-
-  check_snakes();
-
-  draw_world();
-  print_world();
-
   int i;
 
-  for(i = 0; i < 90; i++){
+  for(i = 0; i < NUMAPPS; i++){ // place apples
+    apples[i][0] = 0;
+    apples[i][1] = 0;
+  }
+  for(i = 0; i < NUMSNAKES; i++){ // place snakes
+    snakes[i][1][0] = -1;
+    snakes[i][1][1] = -1;
+    directions[i] = 0;
+  }
+  draw_world();
+  for(i = 0; i < NUMAPPS; i++){ // place apples
+    reset_apple(i);
+  }
+  for(i = 0; i < NUMSNAKES; i++){ // place snakes
+    reset_snake(i);
+  }
+
+
+
+  for(i = 0; i < 90; i++){ // run the game for 90 frames
     move_snakes();
     check_snakes();
     draw_world();
     print_world();
-    usleep(200000);
+    usleep(DELAY);
 
   }
-
-  int fd1[2];
-  pid_t p;
-
-  if (pipe(fd1)==-1)
-  {
-    fprintf(stderr, "Pipe Failed #%d\n",i );
-    return 1;
-  }
-
-  p = fork();
-
-  if (p < 0)
-  {
-    fprintf(stderr, "fork Failed" );
-    return 1;
-
-
-  }else if (p > 0){
-
-    int i;
-    int n;
-    for(i = 0; i < 10; i++){
-      read(fd1[0],&n,sizeof(n));
-      printf("%d\n",n);
-    }
-    
-  }
-  else
-  {
-    int i;
-    for(i = 0; i < 10; i++){
-      write(fd1[1],&i,sizeof(i));
-    }
-
-    exit(0);
-  }
-
 
   
 }
