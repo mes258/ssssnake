@@ -12,7 +12,7 @@
 // (as described in the comments)
 
 int SIZE = 30;    // size of world
-int NUMSNAKES = 3;// number of snakes
+int NUMSNAKES = 4;// number of snakes
 int NUMAPPS = 2;  // number of apples
 int GROW = 3;     // number of segments added per apple
 int DELAY = 200000; // pause in microseconds
@@ -22,8 +22,8 @@ char A = '@';     // character that represents apple
 char EMPTY = '.'; // character that represents empty
 
 char world[30][30];        // needs to be [SIZE][SIZE]
-int snakes[3][30*30][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
-int directions[3];       // needs to be [NUMSNAKES]
+int snakes[100][30*30][2];  // needs to be [>NUMSNAKES][SIZE*SIZE][2]
+int directions[100];       // needs to be [>NUMSNAKES]
                         // also: directions are: { 0 = +x ; 1 = +y ; 2 = -x ; 3 = -y }
 int apples[8][2];   //  \\ needs to be [NUMAPPS][2]
 
@@ -360,15 +360,49 @@ void determine_directions(){
     }
 
     if(pid != 0){
+      //Human snake
+      /*if(i == 0){
+        char str = 'A';
+        //sleep(5);
+        //char ch;
+        //ch = getchar();
+        //if (str == '\033') { // if the first value is esc
+          //getchar(); // skip the [
+          switch(str) { // the real value
+            case 'A':
+              printf("UP!\n");
+              // code for arrow up
+              break;
+            case 'B':
+              printf("down!\n");
+              // code for arrow down
+              break;
+            case 'C':
+              printf("right!\n");
+              // code for arrow right
+              break;
+            case 'D':
+              printf("left!\n");
+              // code for arrow left
+              break;
+          }
+        
+        directions[i] = 3;
+        write( pipes[i][1], &directions[i], sizeof(directions[i]) ); // write new direction to pipe
+        close( pipes[i][1] );
+        close( pipes[i][0] );
+      }
+      //non-human snake
+      else{*/
+        directions[i] = get_next_move(i);
 
-      directions[i] = get_next_move(i);
+        printf("#%d writes %d\n",i,directions[i]);
+        write( pipes[i][1], &directions[i], sizeof(directions[i]) ); // write new direction to pipe
+        close( pipes[i][1] );
+        close( pipes[i][0] );
 
-      printf("#%d writes %d\n",i,directions[i]);
-      write( pipes[i][1], &directions[i], sizeof(directions[i]) ); // write new direction to pipe
-      close( pipes[i][1] );
-      close( pipes[i][0] );
-
-      exit(0); // destroy thread
+        exit(0); // destroy thread
+      //}
     }
   }
 
@@ -392,6 +426,14 @@ void move_snakes(){
 }
 
 int main(int argc, char *argv[]) {
+  printf("How many snakes? \n");
+  int c = getchar();
+  c = c-48;
+  printf("%d snakes! \n", c);
+  NUMSNAKES = c;
+  //snakes = snakes[c][30*30][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
+  //directions = directions[c];       // needs to be [NUMSNAKES]
+
 
   int i;
 
@@ -412,7 +454,7 @@ int main(int argc, char *argv[]) {
     reset_snake(i);
   }
 
-  for(i = 0; i < 1000; i++){ // run the game for 90 frames
+  for(i = 0; i < 100; i++){ // run the game for 90 frames
     move_snakes();
     check_snakes();
     draw_world();
