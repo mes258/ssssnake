@@ -13,6 +13,7 @@
 int SIZE = 20;    // size of world
 int NUMSNAKES = 3;// number of snakes
 int NUMAPPS = 2;  // number of apples
+int GROW = 3;     // number of segments added per apple
 
 char S = 'X';     // character that represents snake
 char A = '@';     // character that represents apple
@@ -32,8 +33,8 @@ void snake_grow(int n){
     j++;
   }
 
-  for(i = 0; i < 1; i++){
-    snakes[n][j+i][0] = SIZE; // add [max i] available segments, but put them outside of the map (they'll get used later)
+  for(i = 0; i < GROW; i++){
+    snakes[n][j+i][0] = SIZE; // add GROW available segments, but put them outside of the map (they'll get used later)
     snakes[n][j+i][1] = SIZE;
   }
 
@@ -255,7 +256,7 @@ int get_next_move(int n){
   int ql = 0; // queue length: the last entry in the queue
   int qp = 0; // the current position in the queue
 
-  while(world[x][y] != A){ // build paths until an apple is found
+  while(world[x][y] != A ){ // build paths until an apple is found
     if(x > 0){
       if(world[x-1][y] != S && path[x-1][y] == 0){
         path[x-1][y] = 4;
@@ -291,13 +292,13 @@ int get_next_move(int n){
     qp+=1;
     x = queue[qp][0];
     y = queue[qp][1];
+    printf("#%d, %d,%d\n",n,ql,qp);
   }
 
   nextx = x;
   nexty = y;
 
   while(nextx != startx || nexty != starty){
-    printf("#%d, %d,%d - %d,%d\n",n,startx,starty,nextx,nexty);
     x = nextx;
     y = nexty;
     if(path[x][y] == 2){
@@ -313,7 +314,6 @@ int get_next_move(int n){
       nexty = y+1;
     }
   }
-  printf("#%d, %d,%d - %d,%d\n",n,startx,starty,nextx,nexty);
 
   if(path[x][y] == 2){
     return 0;
@@ -351,19 +351,6 @@ void determine_directions(){
     }
 
     if(pid != 0){
-
-      /* this does some pseudo-random BS
-      if(rand()%4 == 0){
-        directions[i] += (rand()%3)-1;
-
-        if(directions[i] > 3){
-          directions[i] = 0;
-        }
-        if(directions[i] < 0){
-          directions[i] = 3;
-        }
-      }
-      */
 
       directions[i] = get_next_move(i);
 
