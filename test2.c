@@ -83,18 +83,21 @@ void check_snakes(){
   for(i = 0; i < NUMSNAKES; i++){
     x1 = snakes[i][0][0];
     y1 = snakes[i][0][1];
+    if(x1 >= SIZE || y1 >= SIZE || x1 < 0 || y1 < 0){ // check if snake hits wall
+      collided[i] = 1;
+    }
     for(j = 0; j < NUMSNAKES; j++){
-      if(i != j){
-        k = 0;
-        while(snakes[j][k][0] > -1){
+      k = 0;
+      while(snakes[j][k][0] > -1){
+        if(i != j || k != 0){ // make sure to not check if the snake head is colliding with itself
           x2 = snakes[j][k][0];
           y2 = snakes[j][k][1];
-          if(x1 == x2 && y1 == y2){
+          if(x1 == x2 && y1 == y2){ // check if snake hits another snake
             collided[i] = 1;
             collided[j] = 1;
           }
-          k++;
         }
+        k++;
       }
     }
     
@@ -126,6 +129,56 @@ void print_world(){
   fflush(stdout);
 }
 
+snake_move_foreward(int n){
+  int newx = snakes[n][0][0];
+  int newy = snakes[n][0][1];
+
+  int tempx;
+  int tempy;
+
+  if(directions[n] == 0){
+    newx = (newx+1);
+  }else if(directions[n] == 1){
+    newy = (newy+1);
+  }else if(directions[n] == 2){
+    newx = (newx-1);
+  }else{
+    newy = (newy-1);
+  }
+
+  int j = 1;
+
+  while(snakes[n][j][0] > -1){
+    tempx = snakes[i][j][0];
+    tempy = snakes[i][j][1];
+
+    snakes[i][j][0] = newx;
+    snakes[i][j][1] = newy;
+
+    newx = tempx;
+    newy = tempy;
+
+    j++;
+  }
+
+  snake_grow(int n){
+    int i = 0;
+    int j = 0;
+
+    while(snakes[n][j][0] > -1){ // find the end of the snake
+      j++;
+    }
+
+    for(i = 0; i < 3; i++){
+      snakes[n][j+i][0] = SIZE; // add an 3 available segments, but put them outside of the map (they'll get used later)
+      snakes[n][j+i][1] = SIZE;
+    }
+
+    snakes[n][j+i][0] = -1; // remember to mark the new end of the snake
+    snakes[n][j+i][1] = -1;
+
+  }
+}
 
 
 
