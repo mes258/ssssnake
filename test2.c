@@ -14,7 +14,7 @@ char EMPTY = '.'; // character that represents empty
 
 char world[20][20];        // needs to be [SIZE][SIZE]
 int snakes[3][20*20][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
-int directions[3]        // needs to be [NUMSNAKES]
+int directions[3];       // needs to be [NUMSNAKES]
                         // also: directions are: { 0 = +x ; 1 = +y ; 2 = -x ; 3 = -y }
 
 
@@ -129,7 +129,7 @@ void print_world(){
   fflush(stdout);
 }
 
-snake_move_foreward(int n){
+void snake_move_foreward(int n){
   int newx = snakes[n][0][0];
   int newy = snakes[n][0][1];
 
@@ -146,38 +146,39 @@ snake_move_foreward(int n){
     newy = (newy-1);
   }
 
-  int j = 1;
+  int j = 0;
 
   while(snakes[n][j][0] > -1){
-    tempx = snakes[i][j][0];
-    tempy = snakes[i][j][1];
 
-    snakes[i][j][0] = newx;
-    snakes[i][j][1] = newy;
+    printf("sn:%d - %d,%d\n",n,newx,newy);
+    tempx = snakes[n][j][0];
+    tempy = snakes[n][j][1];
+
+    snakes[n][j][0] = newx;
+    snakes[n][j][1] = newy;
 
     newx = tempx;
     newy = tempy;
 
     j++;
   }
+}
 
-  snake_grow(int n){
-    int i = 0;
-    int j = 0;
+void snake_grow(int n){
+  int i = 0;
+  int j = 0;
 
-    while(snakes[n][j][0] > -1){ // find the end of the snake
-      j++;
-    }
-
-    for(i = 0; i < 3; i++){
-      snakes[n][j+i][0] = SIZE; // add an 3 available segments, but put them outside of the map (they'll get used later)
-      snakes[n][j+i][1] = SIZE;
-    }
-
-    snakes[n][j+i][0] = -1; // remember to mark the new end of the snake
-    snakes[n][j+i][1] = -1;
-
+  while(snakes[n][j][0] > -1){ // find the end of the snake
+    j++;
   }
+
+  for(i = 0; i < 3; i++){
+    snakes[n][j+i][0] = SIZE; // add an 3 available segments, but put them outside of the map (they'll get used later)
+    snakes[n][j+i][1] = SIZE;
+  }
+
+  snakes[n][j+i][0] = -1; // remember to mark the new end of the snake
+  snakes[n][j+i][1] = -1;
 }
 
 
@@ -235,6 +236,20 @@ int main(int argc, char *argv[]) {
 
   draw_world();
   print_world();
+
+  int i;
+  int j;
+
+  for(i = 0; i < 30; i++){
+    for(j = 0; j < NUMSNAKES; j++){
+      snake_move_foreward(j);
+    }
+    check_snakes();
+    draw_world();
+    print_world();
+    sleep(1);
+
+  }
 
   int fd1[2];
   pid_t p;
