@@ -11,8 +11,8 @@
 // (as described in the comments)
 
 int SIZE = 30;    // size of world
-int NUMSNAKES = 3;// number of snakes
-int NUMAPPS = 10;  // number of apples
+int NUMSNAKES = 5;// number of snakes
+int NUMAPPS = 8;  // number of apples
 int GROW = 2;     // number of segments added per apple
 int DELAY = 200000; // pause in microseconds
 
@@ -21,10 +21,10 @@ char A = '@';     // character that represents apple
 char EMPTY = '.'; // character that represents empty
 
 char world[30][30];        // needs to be [SIZE][SIZE]
-int snakes[3][30*30][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
-int directions[3];       // needs to be [NUMSNAKES]
+int snakes[5][30*30][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
+int directions[5];       // needs to be [NUMSNAKES]
                         // also: directions are: { 0 = +x ; 1 = +y ; 2 = -x ; 3 = -y }
-int apples[10][2];   //  \\ needs to be [NUMAPPS][2]
+int apples[8][2];   //  \\ needs to be [NUMAPPS][2]
 
 void snake_grow(int n){
   int i = 0;
@@ -176,7 +176,6 @@ void print_world(){
     }
     printf("\n");
   }
-  printf("--------- --------- --------- ---------\n");
   fflush(stdout);
 }
 
@@ -399,12 +398,18 @@ int main(int argc, char *argv[]) {
 
 
 
-  for(i = 0; i < 90; i++){ // run the game for 90 frames
+  for(i = 0; i < 200; i++){ // run the game for 90 frames
     move_snakes();
     check_snakes();
     draw_world();
     print_world();
+
+    printf("%d\n",i);
     usleep(DELAY);
+
+    // 3 -> 248
+    // 4 -> 254
+    // 5 -> 244
 
   }
 
