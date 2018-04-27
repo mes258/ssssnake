@@ -5,6 +5,7 @@
 #include<string.h>
 #include<sys/wait.h>
 #include<time.h>
+#include<stdio.h>
 
 // when you change these number/size variables,
 // you also have to change the size of the global variables below
