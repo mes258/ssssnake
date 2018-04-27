@@ -14,7 +14,7 @@ int SIZE = 30;    // size of world
 int NUMSNAKES = 3;// number of snakes
 int NUMAPPS = 10;  // number of apples
 int GROW = 3;     // number of segments added per apple
-int DELAY = 200000; // pause in microseconds
+int DELAY = 100000; // pause in microseconds
 
 char S = 'X';     // character that represents snake
 char A = '@';     // character that represents apple
@@ -171,7 +171,7 @@ void print_world(){
     printf("_");
   }
   printf("\n");
-  
+
   for(i = 0; i < SIZE; i++){
     printf("|");
     for(j = 0; j < SIZE; j++){
@@ -247,7 +247,7 @@ void snake_move_foreward(int n){
 }
 
 int get_next_move(int n){
-
+  
   int path[SIZE][SIZE];
   int queue[SIZE*SIZE][2];
 /*
@@ -287,7 +287,7 @@ int get_next_move(int n){
   int ql = 0; // queue length: the last entry in the queue
   int qp = 0; // the current position in the queue
 
-  while(world[x][y] != A && qp <= ql){ // build paths until an apple is found or a dead end is reached
+  while(qp <= ql && world[x][y] != A){ // build paths until an apple is found or a dead end is reached
     if(x > 0){
       if(world[x-1][y] != S && path[x-1][y] == 0){
         path[x-1][y] = 4;
@@ -321,6 +321,12 @@ int get_next_move(int n){
       }
     }
     qp+=1;
+    x = queue[qp][0];
+    y = queue[qp][1];
+  }
+
+  if(qp > ql){ // if the loop was quit because we reached the end of the queue (no apple found),
+    qp-=1;     // then just move towards the last position in the queue (longish path)
     x = queue[qp][0];
     y = queue[qp][1];
   }
@@ -379,11 +385,10 @@ void determine_directions(){
     }
 
     if(pid != 0){
-
       directions[i] = get_next_move(i);
 
       write( pipes[i][1], &directions[i], sizeof(directions[i]) ); // write new direction to pipe
-      close( pipes[i][1] );
+      close( pipes[i][1] ); // it is important to close the pipes
       close( pipes[i][0] );
 
       exit(0); // destroy thread
@@ -392,7 +397,7 @@ void determine_directions(){
 
   for(i = 0; i < NUMSNAKES; i++){
     read( pipes[i][0], &directions[i], sizeof(directions[i]) ); // read and put in directions
-    close( pipes[i][0] );
+    close( pipes[i][0] ); // it is important to close the pipes
     close( pipes[i][1] );
   }
 
@@ -429,7 +434,7 @@ int main(int argc, char *argv[]) {
     reset_snake(i);
   }
 
-  for(i = 0; i < 100; i++){ // run the game for 90 frames
+  for(i = 0; i < 1000; i++){ // run the game for 90 frames
     move_snakes();
     check_snakes();
     draw_world();
