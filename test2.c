@@ -5,68 +5,110 @@
 #include<string.h>
 #include<sys/wait.h>
 
-#include "linkedlist.h"
 
 int SIZE = 20;    // size of world
-int NUMSNAKES = 2;// number of snakes
+int NUMSNAKES = 3;// number of snakes
 char S = 'X';     // character that represents snake
 char A = '@';     // character that represents apple
 char EMPTY = '.'; // character that represents empty
 
+char world[20][20];        // needs to be [SIZE][SIZE]
+int snakes[3][20*20][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
+int directions[3]        // needs to be [NUMSNAKES]
+                        // also: directions are: { 0 = +x ; 1 = +y ; 2 = -x ; 3 = -y }
 
-/*
-typedef enum { UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3 } direction;
 
-typedef struct {
-  char chartype;
-  int posX, posY;
-} SnakeBodyPart;
+void draw_world(){
+  
+  int i;
+  int j;
 
-typedef struct {
-  char chartype;
-  int prev_posX, prev_posY;
-  int posX, posY;
-  direction facing_direction;
-  uint16_t points;
-  LinkedList *body_list;
-} Snake;
+  for(i = 0; i < SIZE; i++){
+    for(j = 0; j < SIZE; j++){
+      world[i][j] = EMPTY;
+    }
+  }
 
-void snake_reset(Snake *snake) {
-  snake->posX = SIZE / 2;
-  snake->posY = SIZE / 2;
-  snake->points = 0;
-  snake->facing_direction = rand() % 4;
-  if (snake->body_list != NULL) {
-    // Remove all the snakes body parts from the screen if there are any
-    if (snake->body_list->length > 0) {
-      uint32_t body_length = snake->body_list->length;
-      for (size_t i = 0; i < body_length; i++) {
-        SnakeBodyPart *body_part = linked_list_pop_last(snake->body_list);
-        mvaddch(body_part->posY, body_part->posX, ' ');
+  for(i = 0; i < NUMSNAKES; i++){
+    j = 0;
+    while(snakes[i][j][0] > -1){
+      int x = snakes[i][j][0];
+      int y = snakes[i][j][1];
+      printf("%d, %d, %d\n",i,j,x);
+      world[x][y] = S;
+      j++;
+    }
+  }
+
+}
+
+void reset_snake(int n){
+  
+  snakes[n][0][0] = -1;
+  snakes[n][0][1] = -1;
+  snakes[n][1][0] = -1;
+  snakes[n][1][1] = -1;
+  draw_world();
+
+  int x = rand() % SIZE;
+  int y = rand() % SIZE;
+
+  while(world[x][y] != EMPTY){
+    x = rand() % SIZE;
+    y = rand() % SIZE;
+  }
+  
+  snakes[n][0][0] = x;
+  snakes[n][0][1] = y;
+
+}
+
+void check_snakes(){
+  
+  int collided[NUMSNAKES];
+  
+  int i;
+  int j;
+  int k;
+
+  int x1;
+  int x2;
+  int y1;
+  int y2;
+
+  for(i = 0; i < NUMSNAKES; i++){
+    collided[i] = 0;
+  }
+
+  for(i = 0; i < NUMSNAKES; i++){
+    x1 = snakes[i][0][0];
+    y1 = snakes[i][0][1];
+    for(j = 0; j < NUMSNAKES; j++){
+      if(i != j){
+        k = 0;
+        while(snakes[j][k][0] > -1){
+          x2 = snakes[j][k][0];
+          y2 = snakes[j][k][1];
+          if(x1 == x2 && y1 == y2){
+            collided[i] = 1;
+            collided[j] = 1;
+          }
+          k++;
+        }
       }
     }
-    linked_list_dealloc(snake->body_list);
+    
   }
-  snake->body_list = linked_list_new();
-  snake_append_body_part(snake);
+
+  for(i = 0; i < NUMSNAKES; i++){
+    if(collided[i] == 1){
+      reset_snake(i);
+    }
+  }
+
 }
 
-Snake *snake_new() {
-  Snake *snake = calloc(1, sizeof(Snake));
-  snake_reset(snake);
-  return snake;
-}
-
-SnakeBodyPart *snake_body_part_new() {
-  SnakeBodyPart *sbp = calloc(1, sizeof(SnakeBodyPart));
-  sbp.chartype = 'X'
-  sbp.posX = 0;
-  sbp.posY = 0;
-  return sbp;
-}
-*/
-
-void print_world(char world[SIZE][SIZE]){
+void print_world(){
   int i;
   int j;
   for(i = 0; i < SIZE; i++){
@@ -84,37 +126,14 @@ void print_world(char world[SIZE][SIZE]){
   fflush(stdout);
 }
 
-void draw_world(char world[SIZE][SIZE], int snakes[NUMSNAKES][SIZE*SIZE][2] ){
-  
-  int i;
-  int j;
-
-  for(i = 0; i < SIZE; i++){
-    for(j = 0; j < SIZE; j++){
-      world[i][j] = EMPTY;
-    }
-  }
-
-  for(i = 0; i < NUMSNAKES; i++){
-    j = 0;
-    while(snakes[i][j][0] < SIZE){
-      int x = snakes[i][j][0];
-      int y = snakes[i][j][1];
-      printf("%d, %d, %d\n",i,j,x);
-      world[x][y] = S;
-      j++;
-    }
-  }
-
-}
-
 
 
 
 int main(int argc, char *argv[]) {
-  char world[SIZE][SIZE];
 
-  int snakes[NUMSNAKES][SIZE*SIZE][2];
+  directions[0] = 0;
+  directions[1] = 2;
+  directions[2] = 0;
 
   snakes[0][0][0] = 3;
   snakes[0][0][1] = 3;
@@ -134,8 +153,8 @@ int main(int argc, char *argv[]) {
   snakes[0][5][0] = 1;
   snakes[0][5][1] = 6;
 
-  snakes[0][6][0] = SIZE;
-  snakes[0][6][1] = SIZE;
+  snakes[0][6][0] = -1; // -1 means end of snake
+  snakes[0][6][1] = -1;
 
   snakes[1][0][0] = 10;
   snakes[1][0][1] = 8;
@@ -143,12 +162,26 @@ int main(int argc, char *argv[]) {
   snakes[1][1][0] = 10;
   snakes[1][1][1] = 7;
 
-  snakes[1][2][0] = SIZE;
-  snakes[1][2][1] = SIZE;
+  snakes[1][2][0] = -1; // -1 means end of snake
+  snakes[1][2][1] = -1;
 
-  draw_world(world, snakes);
+  snakes[2][0][0] = 10;
+  snakes[2][0][1] = 7;
 
-  print_world(world);
+  snakes[2][1][0] = 10;
+  snakes[2][1][1] = 6;
+
+  snakes[2][2][0] = -1; // -1 means end of snake
+  snakes[2][2][1] = -1;
+
+  draw_world();
+
+  print_world();
+
+  check_snakes();
+
+  draw_world();
+  print_world();
 
   int fd1[2];
   pid_t p;
