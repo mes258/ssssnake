@@ -11,9 +11,9 @@
 // (as described in the comments)
 
 int SIZE = 30;    // size of world
-int NUMSNAKES = 5;// number of snakes
-int NUMAPPS = 8;  // number of apples
-int GROW = 2;     // number of segments added per apple
+int NUMSNAKES = 3;// number of snakes
+int NUMAPPS = 2;  // number of apples
+int GROW = 100;     // number of segments added per apple
 int DELAY = 200000; // pause in microseconds
 
 char S = 'X';     // character that represents snake
@@ -21,8 +21,8 @@ char A = '@';     // character that represents apple
 char EMPTY = '.'; // character that represents empty
 
 char world[30][30];        // needs to be [SIZE][SIZE]
-int snakes[5][30*30][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
-int directions[5];       // needs to be [NUMSNAKES]
+int snakes[3][30*30][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
+int directions[3];       // needs to be [NUMSNAKES]
                         // also: directions are: { 0 = +x ; 1 = +y ; 2 = -x ; 3 = -y }
 int apples[8][2];   //  \\ needs to be [NUMAPPS][2]
 
@@ -168,11 +168,11 @@ void print_world(){
   for(i = 0; i < SIZE; i++){
     for(j = 0; j < SIZE; j++){
       if(world[i][j] == EMPTY)
-        printf(" .");
+        printf("  ");
       else if(world[i][j] == S)
-        printf(" X");
+        printf("[]");
       else if(world[i][j] == A)
-        printf(" @");
+        printf("()");
     }
     printf("\n");
   }
@@ -332,6 +332,7 @@ void determine_directions(){
 
   for(i = 0; i < NUMSNAKES; i++){ // set up pipes
     if (pipe(pipes[i])==-1){
+      printf("number of snakes: %d \n", NUMSNAKES );
       fprintf(stderr, "Pipe Failed #%d\n",i );
       exit(0);
     }
@@ -398,7 +399,7 @@ int main(int argc, char *argv[]) {
 
 
 
-  for(i = 0; i < 200; i++){ // run the game for 90 frames
+  for(i = 0; i < 250; i++){ // run the game for 90 frames
     move_snakes();
     check_snakes();
     draw_world();
