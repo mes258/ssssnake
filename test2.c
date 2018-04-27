@@ -181,7 +181,34 @@ void snake_grow(int n){
   snakes[n][j+i][1] = -1;
 }
 
+void move_snakes(){
 
+  // code here for the snakes to decide where to move
+
+  int j;
+  for(j = 0; j < NUMSNAKES; j++){
+    if(rand()%4 == 0){
+      directions[j] += (rand()%3)-1;
+
+      if(directions[j] > 3){
+        directions[j] = 0;
+      }
+      if(directions[j] < 0){
+        directions[j] = 3;
+      }
+    }
+  }
+
+  for(j = 0; j < NUMSNAKES; j++){
+    if(rand()%4 == 0){
+      snake_grow(j);
+    }
+  }
+
+  for(j = 0; j < NUMSNAKES; j++){
+    snake_move_foreward(j);
+  }
+}
 
 int main(int argc, char *argv[]) {
 
@@ -238,12 +265,9 @@ int main(int argc, char *argv[]) {
   print_world();
 
   int i;
-  int j;
 
   for(i = 0; i < 30; i++){
-    for(j = 0; j < NUMSNAKES; j++){
-      snake_move_foreward(j);
-    }
+    move_snakes();
     check_snakes();
     draw_world();
     print_world();
