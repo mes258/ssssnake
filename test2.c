@@ -11,8 +11,8 @@
 // (as described in the comments)
 
 int SIZE = 30;    // size of world
-int NUMSNAKES = 3;// number of snakes
-int NUMAPPS = 10;  // number of apples
+int NUMSNAKES = 4;// number of snakes
+int NUMAPPS = 5;  // number of apples
 int GROW = 3;     // number of segments added per apple
 int DELAY = 100000; // pause in microseconds
 
@@ -21,10 +21,10 @@ char A = '@';     // character that represents apple
 char EMPTY = '.'; // character that represents empty
 
 char world[30][30];        // needs to be [SIZE][SIZE]
-int snakes[3][30*30][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
-int directions[3];       // needs to be [NUMSNAKES]
+int snakes[4][30*30][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
+int directions[4];       // needs to be [NUMSNAKES]
                         // also: directions are: { 0 = +x ; 1 = +y ; 2 = -x ; 3 = -y }
-int apples[10][2];   //  \\ needs to be [NUMAPPS][2]
+int apples[5][2];   //  \\ needs to be [NUMAPPS][2]
 
 void snake_grow(int n){
   int i = 0;
@@ -138,7 +138,7 @@ void check_snakes(){
           y2 = snakes[j][k][1];
           if(x1 == x2 && y1 == y2){ // check if snake hits another snake
             collided[i] = 1;
-            collided[j] = 1;
+            //collided[j] = 1; // this line means that the snake that is hit by another snake also dies
           }
         }
         k++;
@@ -167,13 +167,15 @@ void print_world(){
   int j;
   int k;
   int head;
-  for(i = 0; i < SIZE+SIZE+2; i++){
-    printf("_");
+
+  printf("╔");
+  for(i = 0; i < SIZE+SIZE; i++){
+    printf("═");
   }
-  printf("\n");
+  printf("╗\n");
 
   for(i = 0; i < SIZE; i++){
-    printf("|");
+    printf("║");
     for(j = 0; j < SIZE; j++){
       if(world[i][j] == EMPTY)
         printf("  ");
@@ -187,27 +189,34 @@ void print_world(){
         }
 
         if(head == 0){
-          printf("\\/");
+          //printf("▩ ");
+          printf("░░");
         }else if(head == 1){
-          printf("}>");
+          //printf("▩ ");
+          printf("░░");
         }else if(head == 2){
-          printf("/\\");
+          //printf("▩ ");
+          printf("░░");
         }else if(head == 3){
-          printf("<{");
+          //printf("▩ ");
+          printf("░░");
         }else{
-          printf("[]");
+          //printf("╬╬");
+          //printf("▨ ");
+          printf("██");
         }
 
       }else if(world[i][j] == A)
-        printf("()");
+        printf("◉ ");
     }
-    printf("|\n");
+    printf("║\n");
   }
 
-  for(i = 0; i < SIZE+SIZE+2; i++){
-    printf("¯");
+  printf("╚");
+  for(i = 0; i < SIZE+SIZE; i++){
+    printf("═");
   }
-  printf("\n");
+  printf("╝\n");
 
   fflush(stdout);
 }
@@ -434,7 +443,7 @@ int main(int argc, char *argv[]) {
     reset_snake(i);
   }
 
-  for(i = 0; i < 1000; i++){ // run the game for 90 frames
+  for(i = 0; i < 300; i++){ // run the game for 90 frames
     move_snakes();
     check_snakes();
     draw_world();
