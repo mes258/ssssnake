@@ -6,13 +6,15 @@
 #include<sys/wait.h>
 #include<time.h>
 
+
+
 // when you change these number/size variables,
 // you also have to change the size of the global variables below
 // (as described in the comments)
 
-int SIZE = 30;    // size of world
-int NUMSNAKES = 4;// number of snakes
-int NUMAPPS = 5;  // number of apples
+int SIZE = 60;    // size of world
+int NUMSNAKES = 3;// number of snakes
+int NUMAPPS = 2;  // number of apples
 int GROW = 3;     // number of segments added per apple
 int DELAY = 100000; // pause in microseconds
 
@@ -20,11 +22,11 @@ char S = 'X';     // character that represents snake
 char A = '@';     // character that represents apple
 char EMPTY = '.'; // character that represents empty
 
-char world[30][30];        // needs to be [SIZE][SIZE]
-int snakes[4][30*30][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
-int directions[4];       // needs to be [NUMSNAKES]
+char world[60][60];        // needs to be [SIZE][SIZE]
+int snakes[125][60*60][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
+int directions[125];       // needs to be [NUMSNAKES]
                         // also: directions are: { 0 = +x ; 1 = +y ; 2 = -x ; 3 = -y }
-int apples[5][2];   //  \\ needs to be [NUMAPPS][2]
+int apples[100][2];   //  needs to be [NUMAPPS][2]
 
 void snake_grow(int n){
   int i = 0;
@@ -105,6 +107,10 @@ void reset_snake(int n){
   snakes[n][0][1] = y;
 
 }
+void kill_snake(int n){
+  snakes[n][0][0] = -1;
+  snakes[n][0][1] = -1;
+}
 
 void check_snakes(){
   
@@ -156,7 +162,7 @@ void check_snakes(){
 
   for(i = 0; i < NUMSNAKES; i++){
     if(collided[i] == 1){
-      reset_snake(i);
+      kill_snake(i);
     }
   }
 
@@ -203,11 +209,11 @@ void print_world(){
         }else{
           //printf("╬╬");
           //printf("▨ ");
-          printf("██");
+            printf("██");
         }
-
+//█░▲▼
       }else if(world[i][j] == A)
-        printf("◉ ");
+        printf("🍎");
     }
     printf("║\n");
   }
@@ -423,6 +429,35 @@ void move_snakes(){
 }
 
 int main(int argc, char *argv[]) {
+  printf("Hi, welcome to the game. Enter a value between 1 and 9 \nfor each of the questions below.\n\n");
+  printf("How many snakes? \n");
+  int c = getchar();
+  c = c-48;
+  printf("%d snakes! \n", c);
+  NUMSNAKES = c;
+
+  c = getchar();
+  printf("How much growth? \n");
+  c = getchar();
+  c = c-48;
+  printf("%d growth! \n", c);
+  GROW = c;
+
+  c = getchar();
+  printf("How many apples? \n");
+  c = getchar();
+  c = c-48;
+  printf("%d apples! \n", c);
+  NUMAPPS = c;
+
+  c = getchar();
+  int frames = 0;
+  printf("How many frames? (x300)\n");
+  c = getchar();
+  c = c-48;
+  printf("%d frames! \n", c);
+  frames = c;
+
 
   int i;
 
@@ -443,15 +478,11 @@ int main(int argc, char *argv[]) {
     reset_snake(i);
   }
 
-  for(i = 0; i < 300; i++){ // run the game for 90 frames
+  for(i = 0; i < (frames*300); i++){ // run the game for 90 frames
     move_snakes();
     check_snakes();
     draw_world();
     print_world();
-
     usleep(DELAY);
-
   }
-
-  
 }
