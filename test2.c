@@ -5,6 +5,7 @@
 #include<string.h>
 #include<sys/wait.h>
 #include<time.h>
+#include <stdbool.h>
 
 
 
@@ -27,6 +28,7 @@ int snakes[125][60*60][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
 int directions[125];       // needs to be [NUMSNAKES]
                         // also: directions are: { 0 = +x ; 1 = +y ; 2 = -x ; 3 = -y }
 int apples[100][2];   //  needs to be [NUMAPPS][2]
+bool kill = false;
 
 void snake_grow(int n){
   int i = 0;
@@ -162,7 +164,11 @@ void check_snakes(){
 
   for(i = 0; i < NUMSNAKES; i++){
     if(collided[i] == 1){
-      kill_snake(i);
+      if(kill){
+        kill_snake(i);
+      }else{
+        reset_snake(i);
+      }
     }
   }
 
@@ -457,6 +463,16 @@ int main(int argc, char *argv[]) {
   c = c-48;
   printf("%d frames! \n", c);
   frames = c;
+
+  c = getchar();
+  printf("Do you want to kill the snakes? Enter 0 for kill, 1 for respawn.\n");
+  c = getchar();
+  c = c-48;
+  if(c == 0){
+    kill = true;
+  }else{
+    kill = false;
+  }
 
 
   int i;
