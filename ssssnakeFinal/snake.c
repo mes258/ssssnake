@@ -24,11 +24,12 @@ char A = '@';     // character that represents apple
 char EMPTY = '.'; // character that represents empty
 
 char world[60][60];        // needs to be [SIZE][SIZE]
-int snakes[125][60*60][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
-int directions[125];       // needs to be [NUMSNAKES]
+int snakes[100][60*60][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
+int directions[100];       // needs to be [NUMSNAKES]
                         // also: directions are: { 0 = +x ; 1 = +y ; 2 = -x ; 3 = -y }
 int apples[100][2];   //  needs to be [NUMAPPS][2]
 bool kill = false;
+int snakesleft = 100;
 
 void snake_grow(int n){
   int i = 0;
@@ -162,11 +163,21 @@ void check_snakes(){
 
   for(i = 0; i < NUMSNAKES; i++){
     if(collided[i] == 1){
+      if(snakes[i][0][0] != -1){
+        snakesleft--;
+      }
+
+      if(snakesleft == 0){
+        printf("Game Over!\n");
+        exit(0);
+      }
+
       if(kill){
         kill_snake(i);
       }else{
         reset_snake(i);
       }
+
     }
   }
 }
@@ -432,35 +443,29 @@ void move_snakes(){
 }
 
 int main(int argc, char *argv[]) {
-  printf("Hi, welcome to the game. Enter a value between 1 and 9 \nfor each of the questions below.\n\n");
+  int input = 1;
+  printf("Hi, welcome to the game. Enter a value between 1 and 99 \nfor each of the questions below.\n\n");
   printf("How many snakes? \n");
-  int c = getchar();
-  c = c-48;
-  NUMSNAKES = c;
+  scanf("%d", &input);
+  NUMSNAKES = input;
+  snakesleft = input;
 
-  c = getchar();
-  printf("How much growth? \n");
-  c = getchar();
-  c = c-48;
-  GROW = c;
+  printf("How much should the snakes grow per apple? \n");
+  scanf("%d", &input);
+  GROW = input;
 
-  c = getchar();
   printf("How many apples? \n");
-  c = getchar();
-  c = c-48;
-  NUMAPPS = c;
+  scanf("%d", &input);
+  NUMAPPS = input;
 
-  c = getchar();
   int frames = 0;
-  printf("How many frames? (x300)\n");
-  c = getchar();
-  c = c-48;
-  frames = c;
+  printf("How many frames?\n");
+  scanf("%d", &input);
+  frames = input;
 
-  c = getchar();
   printf("Do you want to kill the snakes? Enter 0 for kill, 1 for respawn.\n");
-  c = getchar();
-  c = c-48;
+  scanf("%d", &input);
+  int c = input;
   if(c == 0){
     kill = true;
   }else{
@@ -487,11 +492,12 @@ int main(int argc, char *argv[]) {
     reset_snake(i);
   }
 
-  for(i = 0; i < (frames*300); i++){ // run the game for 90 frames
+  for(i = 0; i < frames; i++){ // run the game for 90 frames
     move_snakes();
     check_snakes();
     draw_world();
     print_world();
     usleep(DELAY);
   }
+  printf("Score: \n, i");
 }
