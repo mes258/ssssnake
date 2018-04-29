@@ -73,7 +73,6 @@ void draw_world(){
     int y = apples[i][1];
     world[x][y] = A;
   }
-
 }
 
 void reset_apple(int n){
@@ -146,7 +145,6 @@ void check_snakes(){
           y2 = snakes[j][k][1];
           if(x1 == x2 && y1 == y2){ // check if snake hits another snake
             collided[i] = 1;
-            //collided[j] = 1; // this line means that the snake that is hit by another snake also dies
           }
         }
         k++;
@@ -171,7 +169,6 @@ void check_snakes(){
       }
     }
   }
-
 }
 
 void print_world(){
@@ -215,9 +212,9 @@ void print_world(){
         }else{
           //printf("╬╬");
           //printf("▨ ");
-            printf("██");
+          //█░▲▼
+          printf("██");
         }
-//█░▲▼
       }else if(world[i][j] == A)
         printf("🍎");
     }
@@ -271,20 +268,20 @@ int get_next_move(int n){
   
   int path[SIZE][SIZE];
   int queue[SIZE*SIZE][2];
-/*
-  in this array we will store all of the information needed for a depth first search:
-  1. mark all locations as 0
-  2. add the (empty) locations around the starting position to queue + mark start as visited
-  3. mark each of the adacent locations with the direction to get back to the current spot:
+  /*
+    in this array we will store all of the information needed for a depth first search:
+    1. mark all locations as 0
+    2. add the (empty) locations around the starting position to queue + mark start as visited
+    3. mark each of the adacent locations with the direction to get back to the current spot:
 
-        4
-      3 x 1
-        2
+          4
+        3 x 1
+          2
 
-  4. for each item in the queue, repeat step 2 and 3 until you find an apple
-  5. when you find an apple, trace your way back to the start, then move in the direction that
-     you need to go to get to the apple
-*/
+    4. for each item in the queue, repeat step 2 and 3 until you find an apple
+    5. when you find an apple, trace your way back to the start, then move in the direction that
+       you need to go to get to the apple
+  */
   int i;
   int j;
   for(i = 0; i < SIZE; i++){
@@ -439,21 +436,18 @@ int main(int argc, char *argv[]) {
   printf("How many snakes? \n");
   int c = getchar();
   c = c-48;
-  printf("%d snakes! \n", c);
   NUMSNAKES = c;
 
   c = getchar();
   printf("How much growth? \n");
   c = getchar();
   c = c-48;
-  printf("%d growth! \n", c);
   GROW = c;
 
   c = getchar();
   printf("How many apples? \n");
   c = getchar();
   c = c-48;
-  printf("%d apples! \n", c);
   NUMAPPS = c;
 
   c = getchar();
@@ -461,7 +455,6 @@ int main(int argc, char *argv[]) {
   printf("How many frames? (x300)\n");
   c = getchar();
   c = c-48;
-  printf("%d frames! \n", c);
   frames = c;
 
   c = getchar();
