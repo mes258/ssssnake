@@ -1,3 +1,7 @@
+//EECS338 Final Project
+//Vincent Portelli and Michael Smith
+//April 30, 2018
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>
@@ -7,13 +11,11 @@
 #include<time.h>
 #include <stdbool.h>
 
-
-
 // when you change these number/size variables,
 // you also have to change the size of the global variables below
 // (as described in the comments)
 
-int SIZE = 60;    // size of world
+int SIZE = 40;    // size of world
 int NUMSNAKES = 3;// number of snakes
 int NUMAPPS = 2;  // number of apples
 int GROW = 3;     // number of segments added per apple
@@ -23,8 +25,8 @@ char S = 'X';     // character that represents snake
 char A = '@';     // character that represents apple
 char EMPTY = '.'; // character that represents empty
 
-char world[60][60];        // needs to be [SIZE][SIZE]
-int snakes[100][60*60][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
+char world[40][40];        // needs to be [SIZE][SIZE]
+int snakes[100][40*40][2];  // needs to be [NUMSNAKES][SIZE*SIZE][2]
 int directions[100];       // needs to be [NUMSNAKES]
                         // also: directions are: { 0 = +x ; 1 = +y ; 2 = -x ; 3 = -y }
 int apples[100][2];   //  needs to be [NUMAPPS][2]
@@ -109,6 +111,7 @@ void reset_snake(int n){
   snakes[n][0][1] = y;
 
 }
+
 void kill_snake(int n){
   snakes[n][0][0] = -1;
   snakes[n][0][1] = -1;
@@ -166,18 +169,15 @@ void check_snakes(){
       if(snakes[i][0][0] != -1){
         snakesleft--;
       }
-
       if(snakesleft == 0){
         printf("Game Over!\n");
         exit(0);
       }
-
       if(kill){
         kill_snake(i);
       }else{
         reset_snake(i);
       }
-
     }
   }
 }
@@ -221,9 +221,6 @@ void print_world(){
           //printf("▩ ");
           printf("░░");
         }else{
-          //printf("╬╬");
-          //printf("▨ ");
-          //█░▲▼
           printf("██");
         }
       }else if(world[i][j] == A)
@@ -499,5 +496,4 @@ int main(int argc, char *argv[]) {
     print_world();
     usleep(DELAY);
   }
-  printf("Score: \n, i");
 }
